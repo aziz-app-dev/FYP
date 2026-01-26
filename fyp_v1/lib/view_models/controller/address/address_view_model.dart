@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../models/error/error_model.dart';
 import '../../../res/app_url/app_url.dart';
-import '../../../res/colors/app_color.dart';
+import '../../../utils/utils.dart';
 
 class AddressController extends GetxController {
   final box = GetStorage();
@@ -47,7 +47,7 @@ class AddressController extends GetxController {
           await _getAddressFromCoordinates(position);
       address.value = addressData;
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      Utils.showError("Error", e.toString());
     } finally {
       isLoading.value = false;
     }
@@ -124,23 +124,17 @@ class AddressController extends GetxController {
       isLoading.value = false;
 
       if (response.statusCode == 201) {
-        Get.snackbar('Your are address successfully added',
-            'Enjoy your awesome experience',
-            colorText: kLightWhite,
-            backgroundColor: kPrimary,
-            icon: const Icon(Ionicons.fast_food_outline));
+        Utils.showSuccess(
+          'Address successfully added',
+          'Enjoy your awesome experience',
+          icon: const Icon(Ionicons.fast_food_outline),
+        );
       } else {
         var error = errorModelFromJson(response.body);
-        Get.snackbar("Failed to upload address", error.message,
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Icons.error_outline));
+        Utils.showError("Failed to upload address", error.message);
       }
     } catch (e) {
-      Get.snackbar('Error', "Exception: ${e.toString()}",
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Icons.error_outline));
+      Utils.showError('Error', "Exception: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }

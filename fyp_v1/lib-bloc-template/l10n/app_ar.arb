@@ -1,0 +1,13 @@
+{
+  "@@locale": "ar",
+  "email": "البريد الإلكتروني",
+  "password": "كلمة المرور",
+  "login": "تسجيل الدخول",
+  "logout": "تسجيل الخروج",
+  "aCompleteValidEmailExamplejoegmailcom": "بريد إلكتروني صالح مثل joe@gmail.com",
+  "passwordShouldbeatleast_characterswithatleastoneletterandnumber": "يجب أن تكون كلمة المرور 6 أحرف على الأقل مع حرف ورقم واحد على الأقل",
+  "popularShows": "العروض الشائعة",
+  "noDataFound": "لم يتم العثور على بيانات",
+  "noInternetConnection": "لا يوجد اتصال بالإنترنت",
+  "splashScreen": "مرحباً"
+}

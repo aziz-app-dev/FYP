@@ -9,8 +9,8 @@ import 'package:http/http.dart' as http;
 import '../../models/error/error_model.dart';
 import '../../models/login/login_respose_model.dart';
 import '../../res/app_url/app_url.dart';
-import '../../res/colors/app_color.dart';
-import '../../view/main/main_view.dart';
+import '../../utils/utils.dart';
+import '../../view/user/main/main_view.dart';
 
 class VarificationController extends GetxController {
   final box = GetStorage();
@@ -64,21 +64,17 @@ class VarificationController extends GetxController {
         box.write('verification', data.verification);
 
         setLoading = false;
-        // ! snackbar
-        Get.snackbar(
-            'Your are successfully verified', 'Enjoy your awesome experience',
-            colorText: kLightWhite,
-            backgroundColor: kPrimary,
-            icon: const Icon(Ionicons.fast_food_outline));
+
+        Utils.showSuccess(
+          'You are successfully verified',
+          'Enjoy your awesome experience',
+          icon: const Icon(Ionicons.fast_food_outline),
+        );
 
         Get.offAll(const MainScreen());
       } else {
-        // !  error
         var error = errorModelFromJson(response.body);
-        Get.snackbar('Failed to verify Account', error.message,
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Icons.error_outline));
+        Utils.showError('Failed to verify Account', error.message);
       }
       // ! error
     } catch (e) {

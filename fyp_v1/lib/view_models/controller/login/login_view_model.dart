@@ -11,8 +11,9 @@ import 'package:http/http.dart' as http;
 import '../../../models/error/error_model.dart';
 import '../../../models/login/login_respose_model.dart';
 import '../../../res/app_url/app_url.dart';
-import '../../../res/colors/app_color.dart';
-import '../../../view/main/main_view.dart';
+import '../../../view/user/main/main_view.dart';
+import '../../../utils/utils.dart';
+import '../account_switcher/account_switcher_controller.dart';
 
 class LoginController extends GetxController {
   final box = GetStorage();
@@ -53,13 +54,17 @@ class LoginController extends GetxController {
         // print(data);
 
         setLoading = false;
-        // !
-        Get.snackbar(
-            'Your are successfully logged in', 'Enjoy your awesome experience',
-            colorText: kLightWhite,
-            backgroundColor: kPrimary,
-            icon: const Icon(Ionicons.fast_food_outline));
-        // !
+
+        Utils.showSuccess(
+          'You are successfully logged in',
+          'Enjoy your awesome experience',
+          icon: const Icon(Ionicons.fast_food_outline),
+        );
+
+        // Refresh account switcher to check vendor eligibility
+        if (Get.isRegistered<AccountSwitcherController>()) {
+          Get.find<AccountSwitcherController>().refreshEligibility();
+        }
 
         if (data.verification == true) {
           Get.offAll(() => const MainScreen(),
@@ -67,12 +72,13 @@ class LoginController extends GetxController {
               duration: const Duration(milliseconds: 900));
         }
       } else {
-        // !  error
+        setLoading = false;
         var error = errorModelFromJson(response.body);
-        Get.snackbar('Failed to login', error.message,
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Icons.error_outline));
+
+        Utils.showError(
+          'Failed to login',
+          error.message,
+        );
       }
       // ! error
     } catch (e) {
@@ -82,6 +88,10 @@ class LoginController extends GetxController {
 
   // ! logout
   void logout() {
+    // Clear account switcher mode
+    if (Get.isRegistered<AccountSwitcherController>()) {
+      Get.find<AccountSwitcherController>().clearMode();
+    }
     box.erase();
     Get.offAll(() => const MainScreen(),
         transition: Transition.fade,

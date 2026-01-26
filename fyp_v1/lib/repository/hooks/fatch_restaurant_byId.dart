@@ -13,6 +13,7 @@ import '../../res/components/general_exception.dart';
 import 'hook_model/hook_restaurant.dart';
 
 FetchRestaurant useFetchRestaurantById(String restaurantId) {
+  final context = useContext();
   final restaurants = useState<RestaurantModel?>(null);
   final isLoading = useState<bool>(false);
   final apiError = useState<ErrorModel?>(null);
@@ -24,31 +25,21 @@ FetchRestaurant useFetchRestaurantById(String restaurantId) {
     try {
       Uri url =
           Uri.parse('${AppUrl.baseUrl}/api/restaurant/byId/$restaurantId');
-      // '${AppUrl.baseUrl}/api/restaurant/byId/669baffc7963ebe3f866dba5');
 
       final response = await http.get(url);
-
-      // !
-      // if (kDebugMode) {
-      //   print(response.statusCode);
-      // }
+      if (!context.mounted) return;
 
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         restaurants.value = RestaurantModel.fromJson(data);
-        // !
-        // if (kDebugMode) {
-        //   print(data);
-        // }
       } else {
         apiError.value = errorModelFromJson(response.body);
       }
-      // }
-      //  on SocketException {
-      //   Get.to(() => const InterNetExceptionWidget());
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
       if (e is Exception) {
         error.value = e;
@@ -59,7 +50,9 @@ FetchRestaurant useFetchRestaurantById(String restaurantId) {
         error.value = Exception('An unexpected error occurred: $e');
       }
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 

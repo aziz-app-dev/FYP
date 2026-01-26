@@ -14,11 +14,13 @@ class RegistrationModel {
   final String username;
   final String email;
   final String password;
+  final String userType;
 
   RegistrationModel({
     required this.username,
     required this.email,
     required this.password,
+    this.userType = 'Customer',
   });
 
   factory RegistrationModel.fromJson(Map<String, dynamic> json) =>
@@ -26,11 +28,13 @@ class RegistrationModel {
         username: json["username"],
         email: json["email"],
         password: json["password"],
+        userType: json["userType"] ?? 'Customer',
       );
 
   Map<String, dynamic> toJson() => {
         "username": username,
         "email": email,
         "password": password,
+        "userType": userType,
       };
 }

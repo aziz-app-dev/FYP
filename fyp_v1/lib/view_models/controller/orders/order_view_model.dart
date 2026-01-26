@@ -9,8 +9,8 @@ import 'package:http/http.dart' as http;
 import '../../../models/error/error_model.dart';
 import '../../../models/order/order_response_model.dart';
 import '../../../res/app_url/app_url.dart';
-import '../../../res/colors/app_color.dart';
 import '../../../res/routes/routes_name.dart';
+import '../../../utils/utils.dart';
 
 class OrderController extends GetxController {
   final box = GetStorage();
@@ -41,26 +41,19 @@ class OrderController extends GetxController {
       if (response.statusCode == 201) {
         OrderResponseModel data = orderResponseModelFromJson(response.body);
 
-        // String orderId = data.orderId;
-
-        Get.snackbar('${data.message}!', 'Enjoy your awesome experience',
-            colorText: kLightWhite,
-            backgroundColor: kPrimary,
-            icon: const Icon(Ionicons.fast_food_outline));
+        Utils.showSuccess(
+          '${data.message}!',
+          'Enjoy your awesome experience',
+          icon: const Icon(Ionicons.fast_food_outline),
+        );
 
         Get.toNamed(RouteName.mainScreen);
       } else {
         var error = errorModelFromJson(response.body);
-        Get.snackbar("Failed to place order", " ${error.message}",
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Icons.error_outline));
+        Utils.showError("Failed to place order", error.message);
       }
     } catch (e) {
-      Get.snackbar('Error', "Exception: ${e.toString()}",
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Icons.error_outline));
+      Utils.showError('Error', "Exception: ${e.toString()}");
     } finally {
       setLoading = false;
     }
@@ -89,34 +82,19 @@ class OrderController extends GetxController {
       if (response.statusCode == 200) {
         setLoading = false;
         refetch(); // Refresh the order list after successful cancellation
-        Get.snackbar(
+        Utils.showSuccess(
           "Order Cancelled successfully!",
           "Enjoy the awesome experience",
-          colorText: kLightWhite,
-          backgroundColor: kPrimary,
           icon: const Icon(Ionicons.fast_food_outline),
         );
       } else {
         var responseBody = jsonDecode(response.body);
-        Get.snackbar(
-          "Error",
-          responseBody['message'],
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Icons.error_outline),
-        );
+        Utils.showError("Error", responseBody['message']);
       }
     } catch (e) {
-      // print(e);
-      Get.snackbar(
-        "Error",
-        "An error occurred while cancelling the order",
-        colorText: kLightWhite,
-        backgroundColor: kRed,
-        icon: const Icon(Icons.error_outline),
-      );
+      Utils.showError("Error", "An error occurred while cancelling the order");
     } finally {
-      setLoading = true;
+      setLoading = false;
     }
   }
 }

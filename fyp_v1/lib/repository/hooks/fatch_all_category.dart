@@ -9,6 +9,7 @@ import '../../res/components/general_exception.dart';
 import 'hook_model/hook_result.dart';
 
 FetchHook useFetchCategory() {
+  final context = useContext();
   final categoryItems = useState<List<CategoryModel>?>([]);
   final isLoading = useState<bool>(false);
   final apiError = useState<ErrorModel?>(null);
@@ -19,24 +20,27 @@ FetchHook useFetchCategory() {
     try {
       final url = Uri.parse('${AppUrl.baseUrl}/api/category/');
       final response = await http.get(url);
+      if (!context.mounted) return;
       if (response.statusCode == 200) {
         categoryItems.value = categoryModelFromJson(response.body);
       } else {
         apiError.value = errorModelFromJson(response.body);
       }
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
       if (e is Exception) {
-        Get.to(() => const GeneralExceptionWidget());
         error.value = e;
       } else {
-        Get.to(() => const GeneralExceptionWidget());
         error.value = Exception('An unexpected error occurred: $e');
       }
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 

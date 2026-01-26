@@ -9,10 +9,12 @@ import '../../res/components/general_exception.dart';
 import 'hook_model/hook_cart.dart';
 
 FetchCartHook useFetchCart() {
+  final context = useContext();
   final carts = useState<List<CartResponseModel>?>([]);
   final isLoading = useState<bool>(false);
   final apiError = useState<ErrorModel?>(null);
   final error = useState<Exception?>(null);
+
   Future<void> fetchData() async {
     isLoading.value = true;
     final box = GetStorage();
@@ -25,21 +27,18 @@ FetchCartHook useFetchCart() {
       Uri url = Uri.parse('${AppUrl.baseUrl}/api/cart');
 
       final response = await http.get(url, headers: headers);
-      // print('StatusCode:---${response.statusCode}');
-      // print('BodyResponse:---${response.body}');
+      if (!context.mounted) return;
 
       if (response.statusCode == 200) {
         carts.value = cartResponseModelFromJson(response.body);
-        // print('Parsed Addresses:---${carts.value}');
       } else {
         apiError.value = errorModelFromJson(response.body);
       }
-      // }
-      // on SocketException {
-      //   Get.to(() => const InterNetExceptionWidget());
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
       if (e is Exception) {
         error.value = e;
@@ -47,7 +46,9 @@ FetchCartHook useFetchCart() {
         error.value = Exception('An unexpected error occurred: $e');
       }
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 

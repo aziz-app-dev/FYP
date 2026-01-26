@@ -1,0 +1,13 @@
+{
+  "@@locale": "ur",
+  "email": "ای میل",
+  "password": "پاس ورڈ",
+  "login": "لاگ ان",
+  "logout": "لاگ آؤٹ",
+  "aCompleteValidEmailExamplejoegmailcom": "ایک مکمل، درست ای میل جیسے joe@gmail.com",
+  "passwordShouldbeatleast_characterswithatleastoneletterandnumber": "پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے جس میں کم از کم ایک حرف اور نمبر ہو",
+  "popularShows": "مقبول شوز",
+  "noDataFound": "کوئی ڈیٹا نہیں ملا",
+  "noInternetConnection": "انٹرنیٹ کنکشن نہیں ہے",
+  "splashScreen": "خوش آمدید"
+}

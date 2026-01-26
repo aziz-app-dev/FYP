@@ -9,20 +9,20 @@ import '../../res/components/general_exception.dart';
 import 'hook_model/hook_food.dart';
 
 FetchFood useFetchRestaurantFoods(String restaurantId) {
-  // final _categoryController = Get.find<CategoryController>();
+  final context = useContext();
   final foods = useState<List<FoodModel>>([]);
   final isLoading = useState<bool>(false);
   final apiError = useState<ErrorModel?>(null);
   final error = useState<Exception?>(null);
 
   Future<void> fetchData() async {
-    // print(_categoryController.categoryValue);
     isLoading.value = true;
     try {
       Uri url =
           Uri.parse('${AppUrl.baseUrl}/api/foods/byRestaurant/$restaurantId');
 
       final response = await http.get(url);
+      if (!context.mounted) return;
 
       if (response.statusCode == 200) {
         foods.value = foodModelFromJson(response.body);
@@ -30,8 +30,10 @@ FetchFood useFetchRestaurantFoods(String restaurantId) {
         apiError.value = errorModelFromJson(response.body);
       }
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
       if (e is Exception) {
         error.value = e;
@@ -42,7 +44,9 @@ FetchFood useFetchRestaurantFoods(String restaurantId) {
         error.value = Exception('An unexpected error occurred: $e');
       }
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 

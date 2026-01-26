@@ -8,6 +8,7 @@ import '../../res/components/general_exception.dart';
 import 'hook_model/hook_result.dart';
 
 FetchHook useFetchAllRestaurant() {
+  final context = useContext();
   final categoryItems = useState<List<RestaurantModel>?>([]);
   final isLoading = useState<bool>(false);
   final apiError = useState<ErrorModel?>(null);
@@ -18,25 +19,23 @@ FetchHook useFetchAllRestaurant() {
     try {
       Uri url = Uri.parse('${AppUrl.baseUrl}/api/restaurant/all/pk000');
       final response = await http.get(url);
-      print(response.statusCode);
-      print(response.body);
+      if (!context.mounted) return;
       if (response.statusCode == 200) {
         categoryItems.value = restaurantModelFromJson(response.body);
       } else {
         apiError.value = errorModelFromJson(response.body);
       }
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
-      // if (e is Exception) {
-      //   error.value = e;
-      // } else {
-      //   error.value = Exception('An unexpected error occurred: $e');
-      // }
+      if (!context.mounted) return;
       error.value = e as Exception;
       Get.to(() => const GeneralExceptionWidget());
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 

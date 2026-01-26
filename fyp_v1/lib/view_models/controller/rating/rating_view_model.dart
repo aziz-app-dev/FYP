@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import '../../../models/error/error_model.dart';
 import '../../../models/rating/rating_response_model.dart';
 import '../../../res/app_url/app_url.dart';
-import '../../../res/colors/app_color.dart';
+import '../../../utils/utils.dart';
 
 class RatingController extends GetxController {
   final box = GetStorage();
@@ -44,20 +44,12 @@ class RatingController extends GetxController {
         // userRating.value = response['rating'];
       } else {
         var error = errorModelFromJson(response.body);
-        // print(error.message);
         hasRated.value = false;
-        Get.snackbar("Error", error.message,
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Icons.error_outline));
+        Utils.showError("Error", error.message);
       }
     } catch (e) {
       hasRated.value = false;
-      // print('Error: $e');
-      Get.snackbar('Error', "Exception: ${e.toString()}",
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Icons.error_outline));
+      Utils.showError('Error', "Exception: ${e.toString()}");
     } finally {
       // Ensure that any loading state is properly reset
       isLoading.value = false;
@@ -78,25 +70,18 @@ class RatingController extends GetxController {
         RatingResponseModel? result =
             RatingResponseModel.fromJson(bodyResponse);
         hasRated.value = result.status;
-        Get.snackbar(result.message.toString(), "Enjoy awesome experience",
-            colorText: kLightWhite,
-            backgroundColor: kPrimary,
-            icon: const Icon(Ionicons.fast_food_outline));
+        Utils.showSuccess(
+          result.message.toString(),
+          "Enjoy awesome experience",
+          icon: const Icon(Ionicons.fast_food_outline),
+        );
       } else {
         var error = errorModelFromJson(response.body);
-        // print(error.message);
         hasRated.value = false;
-        Get.snackbar("Error", error.message,
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Icons.error_outline));
+        Utils.showError("Error", error.message);
       }
     } catch (e) {
-      // print(e);
-      Get.snackbar("Error", e.toString(),
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Icons.error_outline));
+      Utils.showError("Error", e.toString());
     }
   }
 }

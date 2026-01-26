@@ -5,7 +5,7 @@ class AppUrl {
   static const String apiKey = '775665987148216';
 
   // static const String baseUrl = 'http://192.168.9.100:5000';
-  static const String baseUrl = 'http://192.168.32.149:5000';
+  static const String baseUrl = 'http://190.168.0.216:5000';
   // static const String baseUrl = 'http://192.168.9.102:5000';
   // static const String baseUrl = 'http://192.168.9.103:5000';
   // static const String baseUrl = 'http://192.168.9.107:5000';

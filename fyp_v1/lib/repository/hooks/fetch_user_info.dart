@@ -10,9 +10,9 @@ import '../../res/components/general_exception.dart';
 import 'hook_model/hook_result.dart';
 
 FetchHook useUserInfo() {
+  final context = useContext();
   final box = GetStorage();
   String? accessToken = box.read("token");
-  // final imageUploadController = Get.put(ImageUploadController());
   final user = useState<UserInformationModel?>(null);
   final isLoading = useState<bool>(false);
   final apiError = useState<ErrorModel?>(null);
@@ -27,21 +27,18 @@ FetchHook useUserInfo() {
     try {
       Uri url = Uri.parse('${AppUrl.baseUrl}/api/user');
       final response = await http.get(url, headers: headers);
+      if (!context.mounted) return;
       if (response.statusCode == 200) {
-        // print('Status Code: ----${response.statusCode}');
-        // print('Bod/y of response: ----${response.body}');
         var data = json.decode(response.body);
         user.value = UserInformationModel.fromJson(data);
-        // imageUploadController.imageUrl.value = user.value!.profile;
-        // print('addresses value: ----${user.value}');
       } else {
         apiError.value = errorModelFromJson(response.body);
       }
-      // } on SocketException {
-      //   Get.to(() => const InterNetExceptionWidget());
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
       if (e is Exception) {
         error.value = e;
@@ -49,7 +46,9 @@ FetchHook useUserInfo() {
         error.value = Exception('An unexpected error occurred: $e');
       }
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 

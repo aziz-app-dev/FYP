@@ -1,16 +1,16 @@
 import 'package:get/get.dart';
 
-import '../../view/address/address_view.dart';
-import '../../view/address/shipping_address_view.dart';
-import '../../view/auth/login/login.dart';
-import '../../view/auth/register/register.dart';
-import '../../view/category/all_category_view.dart';
-import '../../view/category/category_view.dart';
-import '../../view/home/al_lFastestFood.dart';
-import '../../view/home/all_nearby_restaurent.dart';
-import '../../view/home/all_recommendation.dart';
-import '../../view/main/main_view.dart';
-import '../../view/orders/user_order.dart';
+import '../../view/user/address/address_view.dart';
+import '../../view/user/address/shipping_address_view.dart';
+import '../../view/user/auth/login/login.dart';
+import '../../view/user/auth/register/register.dart';
+import '../../view/user/category/all_category_view.dart';
+import '../../view/user/category/category_view.dart';
+import '../../view/user/home/al_lFastestFood.dart';
+import '../../view/user/home/all_nearby_restaurent.dart';
+import '../../view/user/home/all_recommendation.dart';
+import '../../view/user/main/main_view.dart';
+import '../../view/user/orders/user_order.dart';
 import 'routes_name.dart';
 
 class AppRoutes {

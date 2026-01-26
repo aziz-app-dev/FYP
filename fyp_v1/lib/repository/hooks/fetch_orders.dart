@@ -17,6 +17,7 @@ String clientOrderModelToJson(List<ClientOrderModel> data) =>
     json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 FetchHook useFetchOrders(String orderStatus, String paymentStatus) {
+  final context = useContext();
   final box = GetStorage();
   String accessToken = box.read("token");
   final orders = useState<List<ClientOrderModel>>([]);
@@ -26,31 +27,26 @@ FetchHook useFetchOrders(String orderStatus, String paymentStatus) {
 
   Future<void> fetchData() async {
     isLoading.value = true;
-    // ! headers
     Map<String, String> headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $accessToken'
     };
     try {
-      // !  url
       Uri url = Uri.parse(
           '${AppUrl.baseUrl}/api/order?paymentStatus=$paymentStatus&orderStatus=$orderStatus');
 
       final response = await http.get(url, headers: headers);
-      // !  response
+      if (!context.mounted) return;
       if (response.statusCode == 200) {
-        // print('Status Code: ----${response.statusCode}');
-        // print('Body of response: ----${response.body}');
         orders.value = clientOrderModelFromJson(response.body);
-        // print('Orders: ----${orders.value}');
       } else {
         apiError.value = errorModelFromJson(response.body);
       }
-      // } on SocketException {
-      //   Get.to(() => const InterNetExceptionWidget());
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
       if (e is Exception) {
         error.value = e;
@@ -58,7 +54,9 @@ FetchHook useFetchOrders(String orderStatus, String paymentStatus) {
         error.value = Exception('An unexpected error occurred: $e');
       }
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 

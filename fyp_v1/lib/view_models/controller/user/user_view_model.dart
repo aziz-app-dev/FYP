@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 import '../../../models/error/error_model.dart';
 import '../../../models/user/user_info_model.dart';
 import '../../../res/app_url/app_url.dart';
-import '../../../res/colors/app_color.dart';
+import '../../../utils/utils.dart';
 
 class UserInformation extends GetxController {
   final box1 = GetStorage();
@@ -36,10 +36,7 @@ class UserInformation extends GetxController {
     if (pickedFile != null) {
       selectedImagePath!.value = pickedFile.path;
     } else {
-      Get.snackbar('Warring', 'No image selected',
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Ionicons.warning));
+      Utils.showWarning('Warning', 'No image selected');
     }
   }
 
@@ -60,21 +57,16 @@ class UserInformation extends GetxController {
         var responseData = await response.stream.bytesToString();
         var jsonResponse = json.decode(responseData);
         imageUrl.value = jsonResponse['secure_url'];
-        Get.snackbar('Success', 'Image uploaded successfully!',
-            colorText: kLightWhite,
-            backgroundColor: kPrimary,
-            icon: const Icon(Ionicons.fast_food_outline));
+        Utils.showSuccess(
+          'Success',
+          'Image uploaded successfully!',
+          icon: const Icon(Ionicons.fast_food_outline),
+        );
       } else {
-        Get.snackbar('Warring', 'Failed to upload image',
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Ionicons.warning));
+        Utils.showWarning('Warning', 'Failed to upload image');
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred: $e',
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Ionicons.warning));
+      Utils.showError('Error', 'An error occurred: $e');
     }
   }
 
@@ -130,25 +122,18 @@ class UserInformation extends GetxController {
 
       if (response.statusCode == 200) {
         isLoading.value = false;
-        // print(response.statusCode);
-        Get.snackbar('Success', 'User updated successfully!',
-            colorText: kLightWhite,
-            backgroundColor: kPrimary,
-            icon: const Icon(Icons.update_rounded));
+        Utils.showSuccess(
+          'Success',
+          'User updated successfully!',
+          icon: const Icon(Icons.update_rounded),
+        );
       } else {
         isLoading.value = false;
-        Get.snackbar('Error', 'Failed to update user!',
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Icons.error_outline_outlined));
+        Utils.showError('Error', 'Failed to update user!');
       }
     } catch (error) {
       isLoading.value = false;
-      // print("Error: $error");
-      Get.snackbar('Error', '$error',
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Icons.error_outline_outlined));
+      Utils.showError('Error', '$error');
     } finally {
       isLoading.value = false;
     }

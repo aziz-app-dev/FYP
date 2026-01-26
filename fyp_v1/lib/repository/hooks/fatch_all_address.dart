@@ -12,6 +12,7 @@ import '../../res/components/general_exception.dart';
 import 'hook_model/hook_address.dart';
 
 FetchAddressHook useFetchAddress() {
+  final context = useContext();
   final addresses = useState<List<AddressResponseModel>?>(null);
   final isLoading = useState<bool>(false);
   final apiError = useState<ErrorModel?>(null);
@@ -29,20 +30,19 @@ FetchAddressHook useFetchAddress() {
       Uri url = Uri.parse('${AppUrl.baseUrl}/api/address');
 
       final response = await http.get(url, headers: headers);
-      // print('StatusCode:---${response.statusCode}');
-      // print('BodyResponse:---${response.body}');
+      if (!context.mounted) return;
 
       if (response.statusCode == 200) {
         json.decode(response.body);
-        // print('Parsed JSON Response: $jsonResponse');
         addresses.value = addressResponseModelFromJson(response.body);
-        // print('Parsed Addresses:---${addresses.value}');
       } else {
         apiError.value = errorModelFromJson(response.body);
       }
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
+      if (!context.mounted) return;
       if (e is Exception) {
         Get.to(() => const GeneralExceptionWidget());
         error.value = e;
@@ -50,7 +50,9 @@ FetchAddressHook useFetchAddress() {
         error.value = Exception('An unexpected error occurred: $e');
       }
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 

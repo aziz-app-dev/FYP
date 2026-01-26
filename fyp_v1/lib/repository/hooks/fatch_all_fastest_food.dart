@@ -9,6 +9,7 @@ import '../../res/components/general_exception.dart';
 import 'hook_model/hook_food.dart';
 
 FetchFood useFetchFastestFood() {
+  final context = useContext();
   final foods = useState<List<FoodModel>?>([]);
   final isLoading = useState<bool>(false);
   final apiError = useState<ErrorModel?>(null);
@@ -19,14 +20,17 @@ FetchFood useFetchFastestFood() {
     try {
       Uri url = Uri.parse('${AppUrl.baseUrl}/api/foods/all/123456');
       final response = await http.get(url);
+      if (!context.mounted) return;
       if (response.statusCode == 200) {
         foods.value = foodModelFromJson(response.body);
       } else {
         apiError.value = errorModelFromJson(response.body);
       }
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
       if (e is Exception) {
         error.value = e;
@@ -34,7 +38,9 @@ FetchFood useFetchFastestFood() {
         error.value = Exception('An unexpected error occurred: $e');
       }
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 

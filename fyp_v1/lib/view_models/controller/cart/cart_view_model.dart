@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import '../../../models/cart/cart_count_model.dart';
 import '../../../models/error/error_model.dart';
 import '../../../res/app_url/app_url.dart';
-import '../../../res/colors/app_color.dart';
 import '../../../res/components/general_exception.dart';
+import '../../../utils/utils.dart';
 
 class CartController extends GetxController {
   final box = GetStorage();
@@ -43,21 +43,15 @@ class CartController extends GetxController {
         fetchCartCount();
         setLoading = false;
 
-        Get.snackbar('Add to cart', 'Enjoy your awesome experience',
-            colorText: kLightWhite,
-            backgroundColor: kPrimary,
-            icon: const Icon(
-              Icons.done_outline_rounded,
-              color: Colors.white,
-            ));
+        Utils.showSuccess(
+          'Added to cart',
+          'Enjoy your awesome experience',
+          icon: const Icon(Icons.done_outline_rounded, color: Colors.white),
+        );
       } else {
-        // !  error
         setLoading = false;
         var error = errorModelFromJson(response.body);
-        Get.snackbar('Failed to add to cart', error.message,
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Icons.error_outline));
+        Utils.showError('Failed to add to cart', error.message);
       }
       // } on SocketException {
       //   Get.to(() => const InterNetExceptionWidget());
@@ -65,10 +59,7 @@ class CartController extends GetxController {
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
       setLoading = false;
-      Get.snackbar('Error', e.toString(),
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Icons.error_outline));
+      Utils.showError('Error', e.toString());
       Get.to(() => const GeneralExceptionWidget());
     } finally {
       setLoading = false;
@@ -79,7 +70,6 @@ class CartController extends GetxController {
   void removeToCart(var productId, Function refetch) async {
     setLoading = true;
 
-    // await Future.delayed(Duration(seconds: 2));
     Uri url = Uri.parse('${AppUrl.baseUrl}/api/cart/delete/$productId');
 
     String accessToken = box.read("token");
@@ -94,35 +84,23 @@ class CartController extends GetxController {
       );
       if (response.statusCode == 200) {
         setLoading = false;
-        // print('statusCode:${response.statusCode}');
         refetch();
         fetchCartCount();
-        Get.snackbar('Delete from cart', 'Enjoy your awesome experience',
-            colorText: kLightWhite,
-            backgroundColor: kPrimary,
-            icon: const Icon(
-              Icons.done_outline_rounded,
-              color: Colors.white,
-            ));
+        Utils.showSuccess(
+          'Deleted from cart',
+          'Enjoy your awesome experience',
+          icon: const Icon(Icons.done_outline_rounded, color: Colors.white),
+        );
       } else {
-        // !  error
         setLoading = false;
         var error = errorModelFromJson(response.body);
-        Get.snackbar('Failed to add to cart', error.message,
-            colorText: kLightWhite,
-            backgroundColor: kRed,
-            icon: const Icon(Icons.error_outline));
+        Utils.showError('Failed to remove from cart', error.message);
       }
-      // } on SocketException {
-      //   Get.to(() => const InterNetExceptionWidget());
     } on http.ClientException {
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
       setLoading = false;
-      Get.snackbar('Failed to login', e.toString(),
-          colorText: kLightWhite,
-          backgroundColor: kRed,
-          icon: const Icon(Icons.error_outline));
+      Utils.showError('Error', e.toString());
     } finally {
       setLoading = false;
     }
@@ -158,12 +136,10 @@ class CartController extends GetxController {
     } on http.ClientException {
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
-      setLoading = true;
-
-      // Handle the exception
-      Get.snackbar("Error", "Something went wrong: $e");
+      setLoading = false;
+      Utils.showError("Error", "Something went wrong: $e");
     } finally {
-      setLoading = true;
+      setLoading = false;
     }
   }
 }

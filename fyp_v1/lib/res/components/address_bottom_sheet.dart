@@ -5,8 +5,8 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import '../../utils/utils.dart';
-import '../../view/address/shipping_address_view.dart';
-import '../../view/auth/login/login_redirect.dart';
+import '../../view/user/address/shipping_address_view.dart';
+import '../../view/user/auth/login/login_redirect.dart';
 import '../colors/app_color.dart';
 import 'reuseable_text.dart';
 import 'round_button.dart';

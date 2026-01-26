@@ -1,5 +1,8 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
+
+import '../res/colors/app_color.dart';
 
 class Utils {
   static void fieldFocusChange(
@@ -8,31 +11,100 @@ class Utils {
     FocusScope.of(context).requestFocus(nextFocus);
   }
 
-  // static toastMessage(String message){
-  //   Fluttertoast.showToast(
-  //       msg: message ,
-  //     backgroundColor: AppColor.blackColor ,
-  //     textColor: AppColor.whiteColor,
-  //     gravity: ToastGravity.BOTTOM,
-  //     toastLength: Toast.LENGTH_LONG,
+  /// Shows a snackbar safely, ensuring the overlay is available
+  static void _safeSnackbar({
+    required String title,
+    required String message,
+    Color? colorText,
+    Color? backgroundColor,
+    Widget? icon,
+    SnackPosition snackPosition = SnackPosition.TOP,
+  }) {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (Get.context != null) {
+        Get.snackbar(
+          title,
+          message,
+          colorText: colorText,
+          backgroundColor: backgroundColor,
+          icon: icon,
+          snackPosition: snackPosition,
+        );
+      }
+    });
+  }
 
-  //   );
-  // }
+  /// Basic snackbar
+  static void snackBar(String title, String message) {
+    _safeSnackbar(
+      title: title,
+      message: message,
+      colorText: kLightWhite,
+      backgroundColor: kPrimary,
+    );
+  }
 
-  // static toastMessageCenter(String message){
-  //   Fluttertoast.showToast(
-  //     msg: message ,
-  //     backgroundColor: AppColor.blackColor ,
-  //     gravity: ToastGravity.CENTER,
-  //     toastLength: Toast.LENGTH_LONG,
-  //     textColor: AppColor.whiteColor,
-  //   );
-  // }
+  /// Success snackbar (green)
+  static void showSuccess(String title, String message, {Widget? icon}) {
+    _safeSnackbar(
+      title: title,
+      message: message,
+      colorText: kLightWhite,
+      backgroundColor: kPrimary,
+      icon: icon ?? const Icon(Icons.check_circle_outline, color: kLightWhite),
+    );
+  }
 
-  static snackBar(String title, String message) {
-    Get.snackbar(
-      title,
-      message,
+  /// Error snackbar (red)
+  static void showError(String title, String message, {Widget? icon}) {
+    _safeSnackbar(
+      title: title,
+      message: message,
+      colorText: kLightWhite,
+      backgroundColor: kRed,
+      icon: icon ?? const Icon(Icons.error_outline, color: kLightWhite),
+    );
+  }
+
+  /// Warning snackbar (orange/secondary)
+  static void showWarning(String title, String message, {Widget? icon}) {
+    _safeSnackbar(
+      title: title,
+      message: message,
+      colorText: kLightWhite,
+      backgroundColor: kSecondary,
+      icon:
+          icon ?? const Icon(Icons.warning_amber_outlined, color: kLightWhite),
+    );
+  }
+
+  /// Info snackbar (gray)
+  static void showInfo(String title, String message, {Widget? icon}) {
+    _safeSnackbar(
+      title: title,
+      message: message,
+      colorText: kLightWhite,
+      backgroundColor: kGray,
+      icon: icon ?? const Icon(Icons.info_outline, color: kLightWhite),
+    );
+  }
+
+  /// Custom snackbar with full control
+  static void showCustomSnackbar({
+    required String title,
+    required String message,
+    Color? colorText,
+    Color? backgroundColor,
+    Widget? icon,
+    SnackPosition snackPosition = SnackPosition.TOP,
+  }) {
+    _safeSnackbar(
+      title: title,
+      message: message,
+      colorText: colorText ?? kLightWhite,
+      backgroundColor: backgroundColor ?? kPrimary,
+      icon: icon,
+      snackPosition: snackPosition,
     );
   }
 }
@@ -63,4 +135,15 @@ List<String> orderList = [
   "Delivered",
   "Cancelled",
   // "Ready",
+];
+
+// Vendor order statuses (more granular)
+List<String> vendorOrderList = [
+  "New Orders",
+  "Preparing",
+  "Ready",
+  "Picked Up",
+  "Self-Deliveries",
+  "Delivered",
+  "Cancelled",
 ];

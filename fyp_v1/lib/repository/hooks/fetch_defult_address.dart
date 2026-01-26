@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -30,37 +28,32 @@ FetchHook useDefaultAddress(BuildContext context) {
     try {
       Uri url = Uri.parse('${AppUrl.baseUrl}/api/address/default');
       final response = await http.get(url, headers: headers);
+      if (!context.mounted) return;
       if (response.statusCode == 200) {
-        // print('Status Code: ----${response.statusCode}');
-        // print('Body of response: ----${response.body}');
         box.write('defultAddress', true);
         var data = json.decode(response.body);
         addresses.value = AddressResponseModel.fromJson(data);
-        // print('addresses value: ----${addresses.value}');
       } else {
         box.write('defultAddress', false);
         showAddressSheet(context);
         apiError.value = errorModelFromJson(response.body);
       }
-      // } on SocketException {
-      //   Get.to(() => const InterNetExceptionWidget());
     } on http.ClientException {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
     } catch (e) {
+      if (!context.mounted) return;
       Get.to(() => const GeneralExceptionWidget());
-      // box.write('defultAddress', false);
-      // showVerificationSheet(context);
       if (e is Exception) {
         error.value = e;
-        Get.to(() => const GeneralExceptionWidget());
       } else {
         box.write('defultAddress', false);
-        // showAddressSheet(context);
         error.value = Exception('An unexpected error occurred: $e');
-        Get.to(() => const GeneralExceptionWidget());
       }
     } finally {
-      isLoading.value = false;
+      if (context.mounted) {
+        isLoading.value = false;
+      }
     }
   }
 
