@@ -231,6 +231,107 @@ module.exports = {
     }
   },
 
+  //! Admin: approve / reject a pending restaurant application.
+  //  Body: { verification: "Verified" | "Rejected", verificationMessage?: string }
+  setVerificationStatus: async (req, res) => {
+    const restaurantId = req.params.id;
+    const { verification, verificationMessage } = req.body;
+    const allowed = ["Pending", "Verified", "Rejected"];
+    if (!allowed.includes(verification)) {
+      return res.status(400).json({
+        status: false,
+        message: "verification must be one of: Pending, Verified, Rejected",
+      });
+    }
+    try {
+      const updated = await Restaurantes.findByIdAndUpdate(
+        restaurantId,
+        {
+          verification,
+          ...(verificationMessage
+            ? { verificationMessage }
+            : verification === "Verified"
+              ? { verificationMessage: "Your restaurant is live." }
+              : verification === "Rejected"
+                ? { verificationMessage: "Your application was rejected." }
+                : {}),
+        },
+        { new: true }
+      );
+      if (!updated) {
+        return res
+          .status(404)
+          .json({ status: false, message: "Restaurant not found" });
+      }
+      res.status(200).json({
+        status: true,
+        message: `Restaurant ${verification.toLowerCase()}.`,
+        restaurant: updated,
+      });
+    } catch (error) {
+      res.status(500).json({ status: false, message: error.message });
+    }
+  },
+
+  //! Update restaurant info (vendor only, must own it)
+  updateRestaurant: async (req, res) => {
+    const restaurantId = req.params.id;
+    const ownerId = req.user.id;
+    try {
+      const restaurant = await Restaurantes.findById(restaurantId);
+      if (!restaurant) {
+        return res
+          .status(404)
+          .json({ status: false, message: "Restaurant not found" });
+      }
+      if (
+        restaurant.owner.toString() !== ownerId.toString() &&
+        req.user.userType !== "Admin"
+      ) {
+        return res
+          .status(403)
+          .json({ status: false, message: "Not your restaurant" });
+      }
+      const allowed = ["title", "time", "imageUrl", "logoUrl", "code", "coords"];
+      const updates = {};
+      for (const k of allowed) {
+        if (req.body[k] !== undefined) updates[k] = req.body[k];
+      }
+      const updated = await Restaurantes.findByIdAndUpdate(
+        restaurantId,
+        updates,
+        { new: true }
+      );
+      res
+        .status(200)
+        .json({ status: true, message: "Restaurant updated", restaurant: updated });
+    } catch (error) {
+      res.status(500).json({ status: false, message: error.message });
+    }
+  },
+
+  //! Get the logged-in vendor's own restaurants (owner = req.user.id)
+  getMyRestaurants: async (req, res) => {
+    try {
+      const ownerId = req.user.id;
+      const restaurants = await Restaurantes.find(
+        { owner: ownerId },
+        { __v: 0 }
+      ).sort({ createdAt: -1 });
+      res.status(200).json({
+        status: true,
+        count: restaurants.length,
+        restaurants,
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: false,
+        message: "Error fetching your restaurants",
+        error: error.message,
+      });
+    }
+  },
+
   //! Get all restaurants (Admin only - for selecting default restaurant)
   getAllRestaurantsAdmin: async (req, res) => {
     try {

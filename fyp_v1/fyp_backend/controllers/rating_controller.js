@@ -56,13 +56,63 @@ module.exports = {
   //   }
   // },
 
+  // Returns a ratings summary + review list for a restaurant.
+  // Response: { average, count, breakdown: [n1, n2, n3, n4, n5], reviews: [...] }
+  getByRestaurant: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const items = await Rating.find(
+        { ratingType: "Restaurant", product: id },
+      ).sort({ createdAt: -1 });
+
+      if (items.length === 0) {
+        return res.status(200).json({
+          average: 0,
+          count: 0,
+          breakdown: [0, 0, 0, 0, 0],
+          reviews: [],
+        });
+      }
+
+      const breakdown = [0, 0, 0, 0, 0];
+      let sum = 0;
+      for (const r of items) {
+        const bucket = Math.round(r.rating);
+        const idx = Math.min(Math.max(bucket - 1, 0), 4);
+        breakdown[idx] += 1;
+        sum += r.rating;
+      }
+      const average = sum / items.length;
+      res.status(200).json({
+        average,
+        count: items.length,
+        breakdown, // index 0 = 1-star count, index 4 = 5-star count
+        reviews: items.map((r) => ({
+          _id: r._id,
+          userId: r.userId,
+          username: r.username,
+          userPhoto: r.userPhoto,
+          rating: r.rating,
+          comment: r.comment,
+          createdAt: r.createdAt,
+        })),
+      });
+    } catch (error) {
+      res.status(500).json({ status: false, message: error.message });
+    }
+  },
+
   addRating: async (req, res) => {
-    const { ratingType, product, rating } = req.body;
+    const { ratingType, product, rating, comment, username, userPhoto } =
+      req.body;
     const newRating = new Rating({
       userId: req.user.id,
+      username: username || "",
+      userPhoto: userPhoto || "",
       ratingType: ratingType,
       product: product,
       rating: parseFloat(rating),
+      comment: comment || "",
     });
   
     try {

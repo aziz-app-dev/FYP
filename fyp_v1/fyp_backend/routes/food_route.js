@@ -7,6 +7,7 @@ router.post('/tag/:id', verifyVendor, foodController.addFoodTags);
 router.post('/type/:id', verifyVendor, foodController.addFoodType);
 router.delete('/:id', verifyVendor, foodController.deleteFoodById);
 router.patch('/:id', verifyVendor, foodController.foodAvailable);
+router.put('/:id', verifyVendor, foodController.updateFoodById);
 
 router.get('/:id', foodController.getById);
 router.get('/random/:code', foodController.getRandomFoodByCode);

@@ -1,5 +1,6 @@
 const { response } = require("express");
 const Food = require("../models/food");
+const Restaurantes = require("../models/restaurant");
 const Settings = require("../models/settings");
 
 module.exports = {
@@ -34,10 +35,31 @@ module.exports = {
         .json({ status: false, message: "All fields are required" });
     }
 
-    const newFood = new Food(req.body);
     try {
-      await newFood.save();
+      // Enforce: the owning restaurant must exist AND be Verified.
+      const restaurantId = req.body.restaurant;
+      if (!restaurantId) {
+        return res.status(400).json({
+          status: false,
+          message: "restaurant id is required",
+        });
+      }
+      const restaurant = await Restaurantes.findById(restaurantId);
+      if (!restaurant) {
+        return res
+          .status(404)
+          .json({ status: false, message: "Restaurant not found" });
+      }
+      if (restaurant.verification !== "Verified") {
+        return res.status(403).json({
+          status: false,
+          message:
+            "Your restaurant is not verified yet. You cannot add foods until admin approves it.",
+        });
+      }
 
+      const newFood = new Food(req.body);
+      await newFood.save();
       res
         .status(200)
         .json({ status: true, message: "Food item added successfully" });
@@ -376,39 +398,26 @@ module.exports = {
   },
 
   // ! Foods Search
+  // Regex-based search that works on both local MongoDB and Atlas.
   findFoods: async (req, res) => {
-    let searchText = req.params.search;
-
-    let pipeline = [
-      {
-        $search: {
-          index: "default",
-          text: {
-            query: searchText,
-            path: [
-              "title",
-              "description",
-              "foodTags",
-              "foodType",
-              "category",
-              "code",
-            ],
-            fuzzy: {},
-          },
-        },
-      },
-    ];
+    const searchText = req.params.search;
 
     try {
-      console.log("Pipeline:", JSON.stringify(pipeline, null, 2)); // Log the pipeline for debugging
-      let result = await Food.aggregate(pipeline);
+      const regex = new RegExp(searchText, "i");
+      const result = await Food.find({
+        $or: [
+          { title: regex },
+          { description: regex },
+          { foodTags: regex },
+          { foodType: regex },
+          { category: regex },
+          { code: regex },
+        ],
+      }).select("-__v");
 
-      console.log("Search Text:", searchText); // Log search text for debugging
-      console.log("Search Result:", result); // Log the result for debugging
       res.status(200).json(result);
     } catch (error) {
-      console.error(`Error occurred during search: ${error.message}`); // Log the error
-      res.status(500).json({ status: false, message: error.message });
+      console.error(`Error occurred during search: ${error.message}`);
       res.status(500).json({ status: false, message: error.message });
     }
   },

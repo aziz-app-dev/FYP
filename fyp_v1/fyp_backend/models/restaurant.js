@@ -84,4 +84,21 @@ const RestaurantesSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Keep the verificationMessage in sync with the verification state so
+// stale "under review" text never lingers on an already-verified
+// restaurant. Runs on every save.
+RestaurantesSchema.pre("save", function (next) {
+  if (this.isModified("verification")) {
+    if (this.verification === "Verified") {
+      this.verificationMessage = "Your restaurant is live.";
+    } else if (this.verification === "Rejected") {
+      this.verificationMessage = "Your application was rejected.";
+    } else {
+      this.verificationMessage =
+        "Your restaurant is under review. We will notify you once it is verified.";
+    }
+  }
+  next();
+});
+
 module.exports = mongoose.model("Restaurantes", RestaurantesSchema);

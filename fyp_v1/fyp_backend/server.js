@@ -15,6 +15,7 @@ const ratingRouter = require("./routes/rating_router");
 const orderRouter = require("./routes/order_route");
 const foodSearchRouter = require("./routes/food_search_route");
 const settingsRouter = require("./routes/settings_route");
+const homeRouter = require("./routes/home_route");
 
 // const generateOtp =require("./utils/utls")
 // const sendEmail =require("./utils/smtp_function")
@@ -43,6 +44,7 @@ app.use("/api/rating/", ratingRouter);
 app.use("/api/foodSearch/", foodSearchRouter);
 app.use("/api/order/", orderRouter);
 app.use("/api/settings/", settingsRouter);
+app.use("/api/home/", homeRouter);
 
 app.get("/", (req, res) => res.send("Hello->Aziz"));
 app.listen(PORT || 3000, () =>

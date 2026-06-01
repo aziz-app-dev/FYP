@@ -1,34 +1,25 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:flutter/gestures.dart';
 
-// Navigation
-import 'navigation/app_router.dart';
-
-// Controllers
-import 'res/colors/app_color.dart';
-import 'view_models/controller/account_switcher/account_switcher_controller.dart';
-
-// Views
-import 'view/user/main/main_view.dart';
-import 'view/vendor/home/vendor_home_view.dart';
+import 'common/res/colors/app_color.dart';
+import 'common/res/routes/routes.dart';
+import 'common/utils/utils.dart';
+import 'firebase_options.dart';
+import 'views/splash/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
 
-  // Initialize global controllers that persist across the app
-  _initializeGlobalControllers();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(const MyApp());
-}
-
-/// Initialize controllers that should persist throughout the app lifecycle
-void _initializeGlobalControllers() {
-  // Account switcher controller - manages customer/vendor mode switching
-  Get.put(AccountSwitcherController(), permanent: true);
 }
 
 class MyApp extends StatelessWidget {
@@ -42,52 +33,22 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return GetMaterialApp(
-          title: 'Home Town Bite',
+          title: 'Vendor',
           debugShowCheckedModeBanner: false,
+          scaffoldMessengerKey: Utils.scaffoldMessengerKey,
           scrollBehavior: MyCustomScrollBehavior(),
           theme: ThemeData(
             scaffoldBackgroundColor: kOffWhite,
-            iconTheme: const IconThemeData(color: kDark),
-            primarySwatch: Colors.grey,
+            colorScheme: ColorScheme.fromSeed(seedColor: kSecondary),
+            primaryColor: kGray,
+            iconTheme: const IconThemeData(color: Colors.black),
             useMaterial3: true,
           ),
-          // Use unified router
-          getPages: AppRouter.getRoutes(),
-          // Use InitialRouteDecider to determine starting screen
-          home: const InitialRouteDecider(),
+          getPages: AppRoutes.appRoutes(),
+          home: const SplashScreen(),
         );
       },
     );
-  }
-}
-
-/// Widget that decides the initial route based on auth state and saved mode
-class InitialRouteDecider extends StatelessWidget {
-  const InitialRouteDecider({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final box = GetStorage();
-    final token = box.read('token');
-    final accountController = Get.find<AccountSwitcherController>();
-
-    // Refresh eligibility in case user data changed
-    accountController.refreshEligibility();
-
-    // Check if user is logged in
-    if (token == null) {
-      // Not logged in - show customer main (browsing allowed without login)
-      return const MainScreen();
-    }
-
-    // User is logged in - check their preferred mode
-    if (accountController.isVendorMode && accountController.canSwitchToVendor) {
-      // User prefers vendor mode and has vendor privileges
-      return const VendorHomeView();
-    }
-
-    // Default to customer mode
-    return const MainScreen();
   }
 }
 

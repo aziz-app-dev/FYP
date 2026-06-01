@@ -62,27 +62,33 @@ module.exports = {
       res.status(500).json({ status: false, message: error.message });
     }
   },
-  // ! update order status
-  updateOrderStatus: async (req, res) => {
-    const orderId = req.params.id;
-    const { orderStatus } = req.body;
+  // ! vendor orders — all orders sent to a specific restaurant
+  getVendorOrders: async (req, res) => {
+    const Restaurantes = require("../models/restaurant");
+    const { orderStatus, paymentStatus } = req.query;
+    const ownerId = req.user.id;
 
     try {
-      const updatedOrder = await Order.findByIdAndUpdate(
-        orderId,
-        { orderStatus },
-        { new: true }
-      );
+      // All restaurants owned by this vendor
+      const myRestaurants = await Restaurantes.find({ owner: ownerId }, { _id: 1 });
+      const restaurantIds = myRestaurants.map((r) => r._id.toString());
 
-      if (updatedOrder) {
-        res
-          .status(200)
-          .json({ status: true, message: "Order Status Updated Successfully" });
-      } else {
-        res
-          .status(404)
-          .json({ status: false, message: "Failed to Update Order" });
+      if (restaurantIds.length === 0) {
+        return res.status(200).json([]);
       }
+
+      const query = { restaurantId: { $in: restaurantIds } };
+      if (orderStatus) query.orderStatus = orderStatus;
+      if (paymentStatus) query.paymentStatus = paymentStatus;
+
+      const orders = await Order.find(query)
+        .populate({
+          path: "orderItems.foodId",
+          select: "title time rating imageUrl price",
+        })
+        .sort({ createdAt: -1 });
+
+      res.status(200).json(orders);
     } catch (error) {
       res.status(500).json({ status: false, message: error.message });
     }
@@ -102,17 +108,17 @@ module.exports = {
           .json({ status: false, message: "Order not found" });
       }
 
-      // Check if the current status is "Out For Delivery"
+      // Re-cancelling an already-cancelled order is a no-op; block it.
+      // But allow restoring (Cancelled -> Pending/Preparing/etc.) so
+      // the vendor can undo a mistaken cancellation.
       if (
-        existingOrder.orderStatus ==  'Cancelled'
+        existingOrder.orderStatus == 'Cancelled' &&
+        orderStatus == 'Cancelled'
       ) {
-        return res
-          .status(400)
-          .json({
-            status: false,
-            message:
-              'order already Cancelled',
-          });
+        return res.status(400).json({
+          status: false,
+          message: 'order already Cancelled',
+        });
       }
       if (
         existingOrder.orderStatus == "Out For Delivery" ||
