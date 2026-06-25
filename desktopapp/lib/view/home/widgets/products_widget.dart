@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../models/items_model.dart';
+import '../../../models/brand_model.dart';
 import '../../../res/components/product_card.dart';
 
-Widget buildProductGrid(BuildContext context, List<Product> products) {
+Widget buildProductGrid(
+  BuildContext context,
+  List<Product> products, {
+  List<Brand>? brands,
+}) {
   return LayoutBuilder(
     builder: (context, constraints) {
       int crossAxisCount;
@@ -36,7 +41,7 @@ Widget buildProductGrid(BuildContext context, List<Product> products) {
         ),
         itemCount: products.length,
         itemBuilder: (context, index) {
-          return ProductCard(product: products[index]);
+          return ProductCard(product: products[index], brands: brands);
         },
       );
     },

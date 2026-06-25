@@ -85,87 +85,44 @@ import 'dart:io';
 import 'package:desktopapp/res/colors/app_color.dart';
 import 'package:desktopapp/res/components/app_text_widgrt.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../models/items_model.dart';
 import '../../models/brand_model.dart';
 import '../../utils/app_sizes.dart';
 import '../../view/product_details/product_details_view.dart';
-import '../../view_models/providers/add_prduct_provider.dart';
 import 'app_flushbar.dart';
-import 'package:riverpod/legacy.dart';
 
-// State class for ProductCard
-class ProductCardState {
-  final Brand? brand;
-  final bool isLoadingBrand;
-  final DateTime? lastTapTime;
-
-  ProductCardState({this.brand, this.isLoadingBrand = false, this.lastTapTime});
-
-  ProductCardState copyWith({
-    Brand? brand,
-    bool? isLoadingBrand,
-    DateTime? lastTapTime,
-  }) {
-    return ProductCardState(
-      brand: brand ?? this.brand,
-      isLoadingBrand: isLoadingBrand ?? this.isLoadingBrand,
-      lastTapTime: lastTapTime ?? this.lastTapTime,
-    );
-  }
-}
-
-// StateNotifier for ProductCard
-class ProductCardNotifier extends StateNotifier<ProductCardState> {
-  final Ref ref;
-  final Product product;
-
-  ProductCardNotifier(this.ref, this.product) : super(ProductCardState()) {
-    _loadBrandData();
-  }
-
-  Future<void> _loadBrandData() async {
-    if (product.brand != null && product.brand!.isNotEmpty) {
-      state = state.copyWith(isLoadingBrand: true);
-      try {
-        final dbService = ref.read(databaseServiceProvider);
-        final brands = await dbService.getBrands();
-        final matchingBrand =
-            brands.where((b) => b.name == product.brand).firstOrNull;
-        state = state.copyWith(brand: matchingBrand, isLoadingBrand: false);
-      } catch (e) {
-        state = state.copyWith(isLoadingBrand: false);
-      }
-    }
-  }
-
-  void updateLastTapTime(DateTime? time) {
-    state = state.copyWith(lastTapTime: time);
-  }
-}
-
-class ProductCard extends ConsumerWidget {
+class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback? onTap;
   final VoidCallback? onDoubleTap;
+
+  /// Optional pre-loaded brand list. When provided, the brand badge is
+  /// resolved synchronously with no database read. Callers that don't pass
+  /// it simply render without a badge (avoids a per-card DB query).
+  final List<Brand>? brands;
 
   const ProductCard({
     super.key,
     required this.product,
     this.onDoubleTap,
     this.onTap,
+    this.brands,
   });
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Create a provider for this specific product
-    final provider = StateNotifierProvider.autoDispose<
-      ProductCardNotifier,
-      ProductCardState
-    >((ref) => ProductCardNotifier(ref, product));
+  Brand? get _brand {
+    if (brands == null || product.brand == null || product.brand!.isEmpty) {
+      return null;
+    }
+    for (final b in brands!) {
+      if (b.name == product.brand) return b;
+    }
+    return null;
+  }
 
-    final cardState = ref.watch(provider);
+  @override
+  Widget build(BuildContext context) {
+    final brand = _brand;
 
     return Card(
       elevation: 2,
@@ -198,35 +155,7 @@ class ProductCard extends ConsumerWidget {
                   );
                 }
               },
-          onTap: () async {
-            final now = DateTime.now();
-
-            if (cardState.lastTapTime != null &&
-                now.difference(cardState.lastTapTime!) <
-                    const Duration(milliseconds: 400)) {
-              // Double tap detected
-              ref.read(provider.notifier).updateLastTapTime(null);
-              final result = await Navigator.push<dynamic>(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProductDetailsScreen(product: product),
-                ),
-              );
-              if (result is Map && result['success'] == true && context.mounted) {
-                AppFlushbar.success(
-                  context,
-                  message: result['message'] ?? 'Product updated successfully!',
-                  duration: const Duration(seconds: 2),
-                );
-              }
-            } else {
-              // Single tap
-              ref.read(provider.notifier).updateLastTapTime(now);
-              if (onTap != null) {
-                onTap!();
-              }
-            }
-          },
+          onTap: onTap,
           borderRadius: BorderRadius.circular(AppSizes.borderRadiusSm.r),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,6 +178,7 @@ class ProductCard extends ConsumerWidget {
                                     fit: BoxFit.cover,
                                     width: double.infinity,
                                     height: double.infinity,
+                                    cacheWidth: 400,
                                     errorBuilder:
                                         (context, error, stackTrace) => Icon(
                                           Icons.broken_image,
@@ -265,9 +195,9 @@ class ProductCard extends ConsumerWidget {
                       ),
                     ),
                     // Brand Badge
-                    if (cardState.brand != null &&
-                        cardState.brand!.imageUrl != null &&
-                        cardState.brand!.imageUrl!.isNotEmpty)
+                    if (brand != null &&
+                        brand.imageUrl != null &&
+                        brand.imageUrl!.isNotEmpty)
                       Positioned(
                         top: 6.h,
                         right: 6.w,
@@ -289,8 +219,9 @@ class ProductCard extends ConsumerWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(5.r),
                             child: Image.file(
-                              File(cardState.brand!.imageUrl!),
+                              File(brand.imageUrl!),
                               fit: BoxFit.contain,
+                              cacheWidth: 64,
                               errorBuilder:
                                   (context, error, stackTrace) => Icon(
                                     Icons.branding_watermark,

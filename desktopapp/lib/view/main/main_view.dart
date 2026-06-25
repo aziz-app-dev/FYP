@@ -37,7 +37,7 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
           (Theme.of(context).brightness == Brightness.dark
               ? AppColors.dBottomNavBarColor
               : Colors.white),
-      width: 185.h,
+      width: 185.spMin,
       child: Column(
         children: [
           infoCard(ref),
@@ -103,9 +103,9 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
     final Color inactiveIconColor = Colors.grey[600]!;
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 12.h),
+      padding: EdgeInsets.symmetric(vertical: 12.spMin),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(6.r),
         hoverColor: activeIconColor.withValues(alpha: 0.2),
         splashColor: activeIconColor.withValues(alpha: 0.3),
 
@@ -113,13 +113,13 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
           ref.read(selectedIndexProvider.notifier).state = index;
         },
         child: Container(
-          padding: EdgeInsets.all(8.spMin),
+          padding: EdgeInsets.all(12.spMin),
           decoration: BoxDecoration(
             color:
                 selectedIndex == index
                     ? activeIconColor.withValues(alpha: 0.2)
                     : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10.r),
           ),
           child: AppIcon(
             defaultIcon: selectedIndex == index ? item.activeIcon : item.icon,
@@ -310,16 +310,16 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
     required Color activeColor,
   }) {
     return SizedBox(
-      width: 48,
-      height: 48,
+      width: 48.spMin,
+      height: 48.spMin,
       child: Center(
         child: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(12),
           decoration:
               isActive
                   ? BoxDecoration(
                     color: activeColor.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10.r),
                   )
                   : null,
           child: AppIcon(defaultIcon: icon, win11IconPath: win11IconPath),
@@ -351,7 +351,7 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
                         ? AppColors.dBottomNavBarColor
                         : Colors.white),
                 height: MediaQuery.sizeOf(context).height,
-                width: 35.w,
+                width: 80.spMin,
 
                 child: SingleChildScrollView(
                   child: Column(

@@ -224,7 +224,7 @@ class HomePage extends ConsumerWidget {
                 },
               ),
               SizedBox(height: 12.h),
-              buildProductGrid(context, products),
+              buildProductGrid(context, products, brands: homeState.brands),
               SizedBox(height: 24.h),
             ]);
           }
@@ -251,7 +251,7 @@ class HomePage extends ConsumerWidget {
                 },
               ),
               SizedBox(height: 12.h),
-              buildProductGrid(context, products),
+              buildProductGrid(context, products, brands: homeState.brands),
               SizedBox(height: 24.h),
             ]);
           }
@@ -280,7 +280,7 @@ class HomePage extends ConsumerWidget {
                 },
               ),
               SizedBox(height: 12.h),
-              buildProductGrid(context, products),
+              buildProductGrid(context, products, brands: homeState.brands),
               SizedBox(height: 24.h),
             ]);
           }
@@ -309,7 +309,7 @@ class HomePage extends ConsumerWidget {
                 },
               ),
               SizedBox(height: 12.h),
-              buildProductGrid(context, products),
+              buildProductGrid(context, products, brands: homeState.brands),
               SizedBox(height: 24.h),
             ]);
           }
