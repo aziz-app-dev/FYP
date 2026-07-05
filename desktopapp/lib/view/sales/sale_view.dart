@@ -691,7 +691,7 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
                       ],
                     ),
                     label: Text(
-                      '\$${(salesState.totalAmount - salesState.discount).toStringAsFixed(0)}',
+                      'Rs.${(salesState.totalAmount - salesState.discount).toStringAsFixed(0)}',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 14.spMin,

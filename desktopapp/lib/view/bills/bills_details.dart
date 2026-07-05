@@ -2,7 +2,6 @@
 
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:desktopapp/res/assets/image_assets.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:desktopapp/res/colors/app_color.dart';
@@ -549,7 +548,7 @@ class BillDetailScreenState extends ConsumerState<BillDetailScreen> {
             MainTxtRow(val: paidAmount.toStringAsFixed(2), txt: 'Paid Amount:'),
             MainTxtRow(
               valWidget: mdTextBold(
-                text: '\$${pendingAmount.toStringAsFixed(2)}',
+                text: 'Rs.${pendingAmount.toStringAsFixed(2)}',
                 color: pendingAmount > 0 ? Colors.orange : Colors.green,
               ),
               txt: 'Pending Amount:',
@@ -593,186 +592,224 @@ class BillDetailScreenState extends ConsumerState<BillDetailScreen> {
   Widget _buildDataTable2() {
     final discount = widget.bill.discount;
     final totalAfterDiscount = widget.bill.totalAmount - discount;
-    final totalRows = widget.bill.items.length + 5;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Card(
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.w, horizontal: 12.w),
+        padding: EdgeInsets.symmetric(vertical: 12.spMin, horizontal: 12.spMin),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             mdTextBold(text: 'Items'),
-            SizedBox(height: 15.h),
-            SizedBox(
-              height: totalRows * 43.8.h,
-              child: DataTable2(
+            SizedBox(height: 14.spMin),
+            // Modern table: rounded, bordered, header + zebra rows + summary.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12.spMin),
+              child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(8.r),
-                    topRight: Radius.circular(8.r),
-                  ),
-                  border: Border.all(color: Colors.grey),
-                ),
-                headingRowDecoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(6.r),
-                    topRight: Radius.circular(9.r),
+                  borderRadius: BorderRadius.circular(12.spMin),
+                  border: Border.all(
+                    color:
+                        isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : AppColors.border,
                   ),
                 ),
-                columnSpacing: 2.w,
-                horizontalMargin: 5.w,
-                dividerThickness: 0,
-                headingRowColor: WidgetStateProperty.all(
-                  (Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.primary.withValues(alpha: 0.4)
-                      : AppColors.primary),
-                ),
-                headingTextStyle: TextStyle(
-                  fontSize: 12.spMin,
-                  fontWeight: FontWeight.bold,
-                ),
-                dataTextStyle: TextStyle(
-                  fontSize: 12.spMin,
-                  color:
-                      (Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black),
-                ),
-                columns: [
-                  DataColumn2(
-                    label: smTextBold(text: 'Name'),
-                    size: ColumnSize.M,
-                  ),
-                  DataColumn2(
-                    label: smTextBold(text: 'Qty'),
-                    size: ColumnSize.S,
-                    numeric: true,
-                  ),
-                  DataColumn2(
-                    label: smTextBold(text: 'Unit Price'),
-                    size: ColumnSize.S,
-                    numeric: true,
-                  ),
-                  DataColumn2(
-                    label: smTextBold(text: 'Total'),
-                    size: ColumnSize.S,
-                    numeric: true,
-                  ),
-                ],
-                rows: [
-                  ...widget.bill.items.map((item) {
-                    final qty = widget.bill.quantities[item.id] ?? 1;
-                    final itemTotal = item.price * qty;
-                    return DataRow2(
-                      cells: [
-                        DataCell(smText(text: item.name)),
-                        DataCell(smText(text: qty.toString())),
-                        DataCell(
-                          smText(text: '\$${item.price.toStringAsFixed(2)}'),
-                        ),
-                        DataCell(
-                          smText(text: '\$${itemTotal.toStringAsFixed(2)}'),
-                        ),
-                      ],
-                    );
-                  }),
-                  DataRow2(
-                    color: WidgetStateProperty.all(Colors.transparent),
-                    cells: [
-                      DataCell(Container()),
-                      DataCell(Container()),
-                      DataCell(Container()),
-                      DataCell(Container()),
-                    ],
-                  ),
-                  DataRow2(
-                    decoration: BoxDecoration(
+                child: Column(
+                  children: [
+                    _tableHeader(isDark),
+                    // Item rows (zebra striping for readability).
+                    ...List.generate(widget.bill.items.length, (index) {
+                      final item = widget.bill.items[index];
+                      final qty = widget.bill.quantities[item.id] ?? 1;
+                      final itemTotal = item.price * qty;
+                      return _itemRow(
+                        isDark: isDark,
+                        striped: index.isOdd,
+                        name: item.name,
+                        qty: qty.toString(),
+                        unitPrice: 'Rs.${item.price.toStringAsFixed(2)}',
+                        total: 'Rs.${itemTotal.toStringAsFixed(2)}',
+                      );
+                    }),
+                    // Summary block, visually separated from the item rows.
+                    Divider(
+                      height: 1,
+                      thickness: 1,
                       color:
-                          (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.dScafoldColor
-                              : AppColors.lScafoldColor),
-                      // borderRadius: BorderRadius.only(
-                      //   topLeft: Radius.circular(10),
-                      //   topRight: Radius.circular(10),
-                      // ),
+                          isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : AppColors.border,
                     ),
-                    color: WidgetStateProperty.all(
-                      (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.dScafoldColor
-                          : AppColors.lScafoldColor),
+                    _summaryRow(
+                      isDark: isDark,
+                      label: 'Subtotal',
+                      value: 'Rs.${widget.bill.totalAmount.toStringAsFixed(2)}',
                     ),
-                    cells: [
-                      DataCell(smTextBold(text: 'Subtotal')),
-                      DataCell(smText(text: '')),
-                      DataCell(smText(text: '')),
-                      DataCell(
-                        smTextBold(
-                          text:
-                              '\$${widget.bill.totalAmount.toStringAsFixed(2)}',
-                        ),
+                    if (discount > 0)
+                      _summaryRow(
+                        isDark: isDark,
+                        label: 'Discount',
+                        value: '-Rs.${discount.toStringAsFixed(2)}',
+                        valueColor: AppColors.error,
                       ),
-                    ],
-                  ),
-                  if (discount > 0)
-                    DataRow2(
-                      decoration: BoxDecoration(
-                        color:
-                            (Theme.of(context).brightness == Brightness.dark
-                                ? AppColors.dScafoldColor
-                                : AppColors.lScafoldColor),
-                      ),
-                      color: WidgetStateProperty.all(
-                        (Theme.of(context).brightness == Brightness.dark
-                            ? AppColors.dScafoldColor
-                            : AppColors.lScafoldColor),
-                      ),
-                      cells: [
-                        DataCell(smText(text: 'Discount')),
-                        DataCell(smText(text: '')),
-                        DataCell(smText(text: '')),
-                        DataCell(
-                          smText(text: '\$${discount.toStringAsFixed(2)}'),
-                        ),
-                      ],
+                    _summaryRow(
+                      isDark: isDark,
+                      label: 'Total',
+                      value: 'Rs.${totalAfterDiscount.toStringAsFixed(2)}',
+                      emphasize: true,
                     ),
-                  DataRow2(
-                    color: WidgetStateProperty.all(Colors.transparent),
-                    cells: [
-                      DataCell(Container()),
-                      DataCell(Container()),
-                      DataCell(Container()),
-                      DataCell(Container()),
-                    ],
-                  ),
-                  DataRow2(
-                    decoration: BoxDecoration(
-                      color:
-                          (Theme.of(context).brightness == Brightness.dark
-                              ? AppColors.dScafoldColor
-                              : AppColors.lScafoldColor),
-                    ),
-                    color: WidgetStateProperty.all(
-                      (Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.dScafoldColor
-                          : AppColors.lScafoldColor),
-                    ),
-                    cells: [
-                      DataCell(mdTextBold(text: 'Total')),
-                      DataCell(smText(text: '')),
-                      DataCell(smText(text: '')),
-                      DataCell(
-                        mdTextBold(
-                          text: '\$${totalAfterDiscount.toStringAsFixed(2)}',
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ---- Modern items-table pieces ----------------------------------------
+
+  Widget _tableHeader(bool isDark) {
+    return Container(
+      color: isDark ? AppColors.primary.withValues(alpha: 0.22) : AppColors.primary,
+      padding: EdgeInsets.symmetric(horizontal: 14.spMin, vertical: 12.spMin),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 5,
+            child: _headCell('Name', Colors.white, TextAlign.left),
+          ),
+          Expanded(
+            flex: 2,
+            child: _headCell('Qty', Colors.white, TextAlign.center),
+          ),
+          Expanded(
+            flex: 3,
+            child: _headCell('Unit Price', Colors.white, TextAlign.right),
+          ),
+          Expanded(
+            flex: 3,
+            child: _headCell('Total', Colors.white, TextAlign.right),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _headCell(String text, Color color, TextAlign align) {
+    return Text(
+      text,
+      textAlign: align,
+      style: TextStyle(
+        fontSize: 12.spMin,
+        fontWeight: FontWeight.bold,
+        color: color,
+      ),
+    );
+  }
+
+  Widget _itemRow({
+    required bool isDark,
+    required bool striped,
+    required String name,
+    required String qty,
+    required String unitPrice,
+    required String total,
+  }) {
+    final stripeColor =
+        isDark
+            ? Colors.white.withValues(alpha: 0.03)
+            : Colors.black.withValues(alpha: 0.025);
+    return Container(
+      color: striped ? stripeColor : Colors.transparent,
+      padding: EdgeInsets.symmetric(horizontal: 14.spMin, vertical: 12.spMin),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 5,
+            child: Text(
+              name,
+              style: TextStyle(fontSize: 12.spMin),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              qty,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12.spMin),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              unitPrice,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 12.spMin,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              total,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 12.spMin,
+                fontWeight: FontWeight.w600,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryRow({
+    required bool isDark,
+    required String label,
+    required String value,
+    Color? valueColor,
+    bool emphasize = false,
+  }) {
+    return Container(
+      color:
+          isDark
+              ? Colors.white.withValues(alpha: 0.04)
+              : Colors.black.withValues(alpha: 0.02),
+      padding: EdgeInsets.symmetric(
+        horizontal: 14.spMin,
+        vertical: emphasize ? 14.spMin : 11.spMin,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: emphasize ? 14.spMin : 12.spMin,
+              fontWeight: emphasize ? FontWeight.bold : FontWeight.w500,
+              color: emphasize ? AppColors.primary : null,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: emphasize ? 15.spMin : 12.spMin,
+              fontWeight: FontWeight.bold,
+              color: valueColor ?? (emphasize ? AppColors.primary : null),
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -783,11 +820,11 @@ class BillDetailScreenState extends ConsumerState<BillDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildHeader(),
+          _AnimatedEntry(delayMs: 0, child: _buildHeader()),
           SizedBox(height: 16.h),
-          _buildBillingSummary(),
+          _AnimatedEntry(delayMs: 90, child: _buildBillingSummary()),
           SizedBox(height: 16.h),
-          _buildDataTable2(),
+          _AnimatedEntry(delayMs: 180, child: _buildDataTable2()),
         ],
       ),
     );
@@ -802,13 +839,20 @@ class BillDetailScreenState extends ConsumerState<BillDetailScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _buildHeader()),
+              Expanded(
+                child: _AnimatedEntry(delayMs: 0, child: _buildHeader()),
+              ),
               SizedBox(width: 16.w),
-              Expanded(child: _buildBillingSummary()),
+              Expanded(
+                child: _AnimatedEntry(
+                  delayMs: 90,
+                  child: _buildBillingSummary(),
+                ),
+              ),
             ],
           ),
           SizedBox(height: 16.h),
-          _buildDataTable2(),
+          _AnimatedEntry(delayMs: 180, child: _buildDataTable2()),
         ],
       ),
     );
@@ -965,6 +1009,57 @@ class BillDetailScreenState extends ConsumerState<BillDetailScreen> {
         tablet: _buildMobileView(),
         desktop: _buildDesktopView(),
       ),
+    );
+  }
+}
+
+/// One-shot entrance animation (fade + slide up) that plays when the widget
+/// first builds — a *page* animation, not tied to scrolling. [delayMs] staggers
+/// multiple entries so sections cascade in.
+class _AnimatedEntry extends StatefulWidget {
+  final Widget child;
+  final int delayMs;
+  const _AnimatedEntry({required this.child, this.delayMs = 0});
+
+  @override
+  State<_AnimatedEntry> createState() => _AnimatedEntryState();
+}
+
+class _AnimatedEntryState extends State<_AnimatedEntry>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 450),
+  );
+  late final Animation<double> _fade = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.easeOut,
+  );
+  late final Animation<Offset> _slide = Tween<Offset>(
+    begin: const Offset(0, 0.06),
+    end: Offset.zero,
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+  @override
+  void initState() {
+    super.initState();
+    // Stagger the start so sections cascade in on page open.
+    Future.delayed(Duration(milliseconds: widget.delayMs), () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(position: _slide, child: widget.child),
     );
   }
 }

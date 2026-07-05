@@ -940,7 +940,7 @@ class _MultiCartSalesScreenState extends ConsumerState<MultiCartSalesScreen>
                                   ],
                                 ),
                                 label: Text(
-                                  '\$${(activeCart.totalAmount - activeCart.discount).toStringAsFixed(0)}',
+                                  'Rs.${(activeCart.totalAmount - activeCart.discount).toStringAsFixed(0)}',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 14.spMin,

@@ -15,6 +15,10 @@ import '../../../view_models/providers/sales_provider.dart';
 import '../../../view_models/providers/product_search_provider.dart';
 import '../../../res/components/product_card.dart';
 
+/// Shared height for the search field and the action buttons next to it, so
+/// they line up exactly across desktop / tablet / mobile.
+const double _kSearchBarHeight = 48;
+
 class ProductsSectionWithSearch extends ConsumerStatefulWidget {
   const ProductsSectionWithSearch({super.key});
 
@@ -26,6 +30,19 @@ class ProductsSectionWithSearch extends ConsumerStatefulWidget {
 class _ProductsSectionWithSearchState
     extends ConsumerState<ProductsSectionWithSearch> {
   final TextEditingController _searchController = TextEditingController();
+
+  // Cache brand/category extraction so it only recomputes when the product
+  // list itself changes — not on every search keystroke or rebuild.
+  List<Product>? _cachedSource;
+  List<String> _cachedBrands = const [];
+  List<String> _cachedCategories = const [];
+
+  void _ensureFilterOptions(List<Product> products) {
+    if (identical(_cachedSource, products)) return;
+    _cachedSource = products;
+    _cachedBrands = _getUniqueBrands(products);
+    _cachedCategories = _getUniqueCategories(products);
+  }
 
   @override
   void dispose() {
@@ -246,7 +263,7 @@ class _ProductsSectionWithSearchState
   }
 
   /// Action button (filter / scanner) — stretches to the search field height
-  /// when placed inside an [IntrinsicHeight] row.
+  /// when placed inside an [IntrinsicHeight] row (fixed width, full height).
   Widget _buildActionButton({
     required Widget icon,
     required VoidCallback onTap,
@@ -259,7 +276,10 @@ class _ProductsSectionWithSearchState
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: SizedBox(width: 44.spMin, child: Center(child: icon)),
+        child: SizedBox(
+          width: _kSearchBarHeight.spMin,
+          child: Center(child: icon),
+        ),
       ),
     );
 
@@ -295,18 +315,18 @@ class _ProductsSectionWithSearchState
     required void Function(String) onSelect,
   }) {
     return Container(
-      height: 40.h,
-      margin: EdgeInsets.symmetric(vertical: 4.h),
+      height: 40.spMin,
+      margin: EdgeInsets.only(bottom: 4.spMin),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 10.w),
+        padding: EdgeInsets.symmetric(horizontal: 16.spMin),
         itemCount: items.length + 1, // +1 for "All"
         itemBuilder: (context, index) {
           final bool isAll = index == 0;
           final String? value = isAll ? null : items[index - 1];
           final bool isSelected = isAll ? selected == null : selected == value;
           return Padding(
-            padding: EdgeInsets.only(right: 8.w),
+            padding: EdgeInsets.only(right: 8.spMin),
             child: FilterChip(
               label: Text(
                 isAll ? 'All' : value!,
@@ -316,14 +336,15 @@ class _ProductsSectionWithSearchState
                 ),
               ),
               selected: isSelected,
+              showCheckmark: false,
+              side: BorderSide.none,
               onSelected: (_) => isAll ? onSelectAll() : onSelect(value!),
               backgroundColor:
                   Theme.of(context).brightness == Brightness.dark
                       ? AppColors.grey800
                       : AppColors.grey200,
               selectedColor: AppColors.primary,
-              checkmarkColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 8.w),
+              padding: EdgeInsets.symmetric(horizontal: 8.spMin),
             ),
           );
         },
@@ -416,7 +437,8 @@ class _ProductsSectionWithSearchState
                                         selected:
                                             state.selectedCategory == category,
                                         selectedColor: AppColors.primary,
-                                        checkmarkColor: Colors.white,
+                                        showCheckmark: false,
+                                        side: BorderSide.none,
                                         onSelected:
                                             (_) => notifier.selectCategory(
                                               category,
@@ -441,7 +463,8 @@ class _ProductsSectionWithSearchState
                                         ),
                                         selected: state.selectedBrand == brand,
                                         selectedColor: AppColors.primary,
-                                        checkmarkColor: Colors.white,
+                                        showCheckmark: false,
+                                        side: BorderSide.none,
                                         onSelected:
                                             (_) => notifier.selectBrand(brand),
                                       ),
@@ -475,9 +498,6 @@ class _ProductsSectionWithSearchState
   Widget build(BuildContext context) {
     final productsAsync = ref.watch(productsFutureProvider);
     final searchState = ref.watch(multiCartProductSearchProvider);
-    final bool isTablet =
-        MediaQuery.of(context).size.width >= 600 &&
-        MediaQuery.of(context).size.width < 1100;
     final bool isMobile = MediaQuery.of(context).size.width < 600;
 
     return productsAsync.when(
@@ -487,8 +507,9 @@ class _ProductsSectionWithSearchState
             child: Text('Error: $error', style: TextStyle(fontSize: 16.spMin)),
           ),
       data: (products) {
-        final brands = _getUniqueBrands(products);
-        final categories = _getUniqueCategories(products);
+        _ensureFilterOptions(products);
+        final brands = _cachedBrands;
+        final categories = _cachedCategories;
         final filteredProducts = _filterProducts(
           products,
           searchState.searchQuery,
@@ -498,12 +519,11 @@ class _ProductsSectionWithSearchState
 
         return Column(
           children: [
-            // Search Bar with Filter + Barcode Scanner (buttons match field height)
+            // Search Bar with Filter + Barcode Scanner. Buttons match the
+            // field height via IntrinsicHeight (no fixed-height SizedBox that
+            // would clip the text field and overflow).
             Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 16.spMin,
-                vertical: 16.spMin,
-              ),
+              padding: EdgeInsets.fromLTRB(16.spMin, 12.spMin, 16.spMin, 6.spMin),
               child: IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -558,18 +578,22 @@ class _ProductsSectionWithSearchState
                         color: Colors.white,
                       ),
                     ),
-                    // Barcode Scanner Button
-                    SizedBox(width: 8.spMin),
-                    _buildActionButton(
-                      tooltip: 'Scan Barcode',
-                      onTap: () => _openBarcodeScanner(context, products, ref),
-                      icon: AppIcon(
-                        defaultIcon: Icons.qr_code_scanner,
-                        win11IconPath: ImageAssets.win11QrCode,
-                        size: 18.spMin,
-                        color: Colors.white,
+                    // Barcode Scanner Button — mobile only (no camera scanner
+                    // on desktop).
+                    if (PlatformUtils.isMobile) ...[
+                      SizedBox(width: 8.spMin),
+                      _buildActionButton(
+                        tooltip: 'Scan Barcode',
+                        onTap:
+                            () => _openBarcodeScanner(context, products, ref),
+                        icon: AppIcon(
+                          defaultIcon: Icons.qr_code_scanner,
+                          win11IconPath: ImageAssets.win11QrCode,
+                          size: 18.spMin,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -623,59 +647,71 @@ class _ProductsSectionWithSearchState
                           ],
                         ),
                       )
-                      : GridView.builder(
-                        padding: EdgeInsets.all(10.w),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: isMobile ? 3 : (isTablet ? 4 : 5),
-                          childAspectRatio:
-                              isMobile
-                                  ? 0.80.spMin
-                                  : isTablet
-                                  ? 0.90.spMin
-                                  : 0.80.spMin,
-                          crossAxisSpacing: 4.w,
-                          mainAxisSpacing: 4.w,
-                        ),
-                        itemCount: filteredProducts.length,
-                        itemBuilder: (context, index) {
-                          final product = filteredProducts[index];
-                          return ProductCard(
-                            product: product,
-                            onTap: () {
-                              // Skip stock check for services (isService == true, stock == null)
-                              if (!product.isService &&
-                                  product.stock != null &&
-                                  product.stock! <= 0) {
-                                showDialog(
-                                  context: context,
-                                  builder:
-                                      (context) => AlertDialog(
-                                        title: mdTextBold(text: 'Out of Stock'),
-                                        content: smText(
-                                          text:
-                                              '${product.name} is currently out of stock.',
-                                          maxLines: 3,
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed:
-                                                () => Navigator.pop(context),
-                                            child: Text(
-                                              'OK',
-                                              style: TextStyle(
-                                                fontSize: 14.spMin,
-                                              ),
+                      : LayoutBuilder(
+                        builder: (context, constraints) {
+                          // Size cards off the section's OWN width (not the
+                          // whole screen) so they stay consistent whether or not
+                          // the cart panel is showing beside them. Capping the
+                          // max card width lets the column count adapt.
+                          //
+                          // `maxCrossAxisExtent` is a pixel value → `.spMin`.
+                          // `childAspectRatio` is a pure ratio → NOT scaled.
+                          final double maxCardWidth =
+                              isMobile ? 130.spMin : 170.spMin;
+                          return GridView.builder(
+                            padding: EdgeInsets.all(8.spMin),
+                            gridDelegate:
+                                SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: maxCardWidth,
+                              childAspectRatio: 0.72,
+                              crossAxisSpacing: 8.spMin,
+                              mainAxisSpacing: 8.spMin,
+                            ),
+                            itemCount: filteredProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = filteredProducts[index];
+                              return ProductCard(
+                                product: product,
+                                onTap: () {
+                                  // Skip stock check for services (isService == true, stock == null)
+                                  if (!product.isService &&
+                                      product.stock != null &&
+                                      product.stock! <= 0) {
+                                    showDialog(
+                                      context: context,
+                                      builder:
+                                          (context) => AlertDialog(
+                                            title: mdTextBold(
+                                              text: 'Out of Stock',
                                             ),
+                                            content: smText(
+                                              text:
+                                                  '${product.name} is currently out of stock.',
+                                              maxLines: 3,
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed:
+                                                    () =>
+                                                        Navigator.pop(context),
+                                                child: Text(
+                                                  'OK',
+                                                  style: TextStyle(
+                                                    fontSize: 14.spMin,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                );
-                              } else {
-                                // Use multi-cart provider to add to active cart
-                                ref
-                                    .read(multiCartProvider.notifier)
-                                    .addToCart(product);
-                              }
+                                    );
+                                  } else {
+                                    // Use multi-cart provider to add to active cart
+                                    ref
+                                        .read(multiCartProvider.notifier)
+                                        .addToCart(product);
+                                  }
+                                },
+                              );
                             },
                           );
                         },

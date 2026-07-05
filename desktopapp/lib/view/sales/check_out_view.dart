@@ -193,6 +193,13 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
   final TextEditingController paidAmountController = TextEditingController();
   final TextEditingController discountController = TextEditingController();
 
+  // Anchor + overlay for the customer-name suggestions so they float over the
+  // fields below (like a real dropdown) instead of taking layout space and
+  // pushing the form down / leaving a gap.
+  final LayerLink _nameFieldLink = LayerLink();
+  final OverlayPortalController _suggestionsPortal = OverlayPortalController();
+  double _nameFieldWidth = 0;
+
   @override
   void initState() {
     super.initState();
@@ -354,43 +361,67 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
     }
   }
 
-  Widget _buildNameField(CustomerFormState customerFormState, bool isWalkIn, {bool isTestBill = false}) {
+  Widget _buildNameField(
+    CustomerFormState customerFormState,
+    bool isWalkIn, {
+    bool isTestBill = false,
+    List<Customer> filteredCustomers = const [],
+  }) {
+    // Anchor the suggestions overlay to the text field. The overlay floats over
+    // the widgets below (real dropdown behaviour) so it never pushes the form
+    // down or leaves a reserved gap when hidden.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CustomTextField(
-          controller: nameController,
-          hintText: customerFormState.fieldConfigs['name']!.hintText,
-          label: customerFormState.fieldConfigs['name']!.title,
-          keyboardType: TextInputType.name,
-          prefixIcon: Icon(
-            Icons.person,
-            color:
-                Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white
-                    : AppColors.lIconColor,
-          ),
-          enabled: !isWalkIn,
-          readOnly: isWalkIn,
-          validator: (value) {
-            if (customerFormState.fieldConfigs['name']!.isRequired &&
-                (value == null || value.isEmpty)) {
-              return customerFormState.fieldConfigs['name']!.validatorText;
-            }
-            return null;
-          },
-          onChange:
-              isWalkIn
-                  ? null
-                  : (value) {
-                    ref
-                        .read(customerFormProvider.notifier)
-                        .updateName(value ?? '');
-                    ref
-                        .read(checkoutProvider.notifier)
-                        .filterCustomers(value ?? '');
+        CompositedTransformTarget(
+          link: _nameFieldLink,
+          child: OverlayPortal(
+            controller: _suggestionsPortal,
+            overlayChildBuilder: (context) {
+              return _buildSuggestionsOverlay(filteredCustomers, isWalkIn);
+            },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                _nameFieldWidth = constraints.maxWidth;
+                return CustomTextField(
+                  controller: nameController,
+                  hintText: customerFormState.fieldConfigs['name']!.hintText,
+                  label: customerFormState.fieldConfigs['name']!.title,
+                  keyboardType: TextInputType.name,
+                  prefixIcon: Icon(
+                    Icons.person,
+                    color:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : AppColors.lIconColor,
+                  ),
+                  enabled: !isWalkIn,
+                  readOnly: isWalkIn,
+                  validator: (value) {
+                    if (customerFormState.fieldConfigs['name']!.isRequired &&
+                        (value == null || value.isEmpty)) {
+                      return customerFormState
+                          .fieldConfigs['name']!
+                          .validatorText;
+                    }
                     return null;
                   },
+                  onChange:
+                      isWalkIn
+                          ? null
+                          : (value) {
+                            ref
+                                .read(customerFormProvider.notifier)
+                                .updateName(value ?? '');
+                            ref
+                                .read(checkoutProvider.notifier)
+                                .filterCustomers(value ?? '');
+                            return null;
+                          },
+                );
+              },
+            ),
+          ),
         ),
         if (isWalkIn) ...[
           SizedBox(height: 4.h),
@@ -405,26 +436,61 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
     );
   }
 
-  Widget _buildSuggestions(
+  /// Floating suggestions list, rendered in an [Overlay] and positioned right
+  /// under the name field via [CompositedTransformFollower]. Because it lives
+  /// in the overlay it does not occupy layout space in the form.
+  Widget _buildSuggestionsOverlay(
     List<Customer> filteredCustomers,
-    bool showSuggestions,
     bool isWalkIn,
   ) {
-    return showSuggestions && filteredCustomers.isNotEmpty && !isWalkIn
-        ? Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8.r)),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 150.h),
-              child: ListView.builder(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Positioned(
+      width: _nameFieldWidth,
+      child: CompositedTransformFollower(
+        link: _nameFieldLink,
+        showWhenUnlinked: false,
+        // Anchor the top of the list to the BOTTOM of the field so it always
+        // drops under it (never covering it), regardless of field height.
+        targetAnchor: Alignment.bottomLeft,
+        followerAnchor: Alignment.topLeft,
+        offset: Offset(0, 6.spMin),
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.grey800 : AppColors.grey100,
+                borderRadius: BorderRadius.circular(10.spMin),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: 220.spMin),
+                child: ListView.separated(
                 shrinkWrap: true,
+                padding: EdgeInsets.all(6.spMin),
                 itemCount: filteredCustomers.length,
+                separatorBuilder: (_, __) => SizedBox(height: 6.spMin),
                 itemBuilder: (context, index) {
                   final customer = filteredCustomers[index];
                   return Card(
-                    margin: EdgeInsets.symmetric(vertical: 4.h),
+                    margin: EdgeInsets.zero,
                     child: ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12.spMin,
+                        vertical: 2.spMin,
+                      ),
                       title: Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -437,6 +503,7 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
                                     ? Colors.white
                                     : Colors.black,
                           ),
+                          SizedBox(width: 6.spMin),
                           smText(
                             text: customer.name,
                             color:
@@ -447,7 +514,9 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
                         ],
                       ),
                       subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          SizedBox(height: 2.spMin),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -461,6 +530,7 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
                                         ? Colors.white
                                         : Colors.black,
                               ),
+                              SizedBox(width: 6.spMin),
                               smText(
                                 text: customer.address,
                                 color:
@@ -484,6 +554,7 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
                                         ? Colors.white
                                         : Colors.black,
                               ),
+                              SizedBox(width: 6.spMin),
                               smText(
                                 text: customer.phoneNumber,
                                 color:
@@ -514,11 +585,13 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
                     ),
                   );
                 },
+                ),
               ),
             ),
           ),
-        )
-        : SizedBox.shrink();
+        ),
+      ),
+    );
   }
 
   Widget _buildAddressField(
@@ -838,8 +911,12 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (customerFormState.fieldConfigs['name']!.isShow) ...[
-          _buildNameField(customerFormState, isWalkIn, isTestBill: isTestBill),
-          _buildSuggestions(filteredCustomers, showSuggestions, isWalkIn),
+          _buildNameField(
+            customerFormState,
+            isWalkIn,
+            isTestBill: isTestBill,
+            filteredCustomers: filteredCustomers,
+          ),
           SizedBox(height: 16.h),
         ],
         if (customerFormState.fieldConfigs['address']!.isShow) ...[
@@ -972,15 +1049,11 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
             children: [
               if (customerFormState.fieldConfigs['name']!.isShow)
                 Expanded(
-                  child: Column(
-                    children: [
-                      _buildNameField(customerFormState, isWalkIn, isTestBill: isTestBill),
-                      _buildSuggestions(
-                        filteredCustomers,
-                        showSuggestions,
-                        isWalkIn,
-                      ),
-                    ],
+                  child: _buildNameField(
+                    customerFormState,
+                    isWalkIn,
+                    isTestBill: isTestBill,
+                    filteredCustomers: filteredCustomers,
                   ),
                 ),
               if (customerFormState.fieldConfigs['name']!.isShow &&
@@ -1121,6 +1194,21 @@ class _CustomerPaymentScreenState extends ConsumerState<CustomerPaymentScreen> {
     final checkoutState = ref.watch(checkoutProvider);
     final totalAfterDiscount =
         widget.totalAmount - (customerFormState.discount ?? widget.discount);
+
+    // Show/hide the floating suggestions overlay to match state. Toggling must
+    // happen outside build(), so defer to the next frame.
+    final bool shouldShowSuggestions =
+        checkoutState.showSuggestions &&
+        checkoutState.filteredCustomers.isNotEmpty &&
+        !(checkoutState.isWalkIn || checkoutState.isTestBill);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (shouldShowSuggestions) {
+        _suggestionsPortal.show();
+      } else {
+        _suggestionsPortal.hide();
+      }
+    });
 
     return Scaffold(
       appBar: AppBarWidget.customAppBar(

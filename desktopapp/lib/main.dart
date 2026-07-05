@@ -53,7 +53,7 @@ class MyApp extends ConsumerWidget {
         final primaryColor = settingsState.primaryColor;
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'My App',
+          title: 'My Shop',
           theme: AppTheme.lightTheme(
             appBarElevation,
             cardElevation,

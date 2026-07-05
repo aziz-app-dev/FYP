@@ -613,6 +613,46 @@ class SettingsPage extends ConsumerWidget {
               ),
             ),
             SizedBox(height: 16.h),
+            // Modules Section — show/hide optional features
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              child: AppExpansionTile(
+                initiallyExpanded: false,
+                tilePadding: EdgeInsets.symmetric(horizontal: 16.w),
+                childrenPadding: EdgeInsets.all(16.h),
+                title: mdTextBold(text: 'Modules'),
+                children: [
+                  _smallSwitchTile(
+                    context: context,
+                    title: 'Shopping List',
+                    subtitle:
+                        'Show the shopping list shortcut on the Home screen',
+                    value: settingsState.showShoppingListModule,
+                    onChanged: (val) {
+                      ref
+                          .read(settingsProvider.notifier)
+                          .setShowShoppingListModule(val);
+                    },
+                  ),
+                  _smallSwitchTile(
+                    context: context,
+                    title: 'Repairs',
+                    subtitle:
+                        'Take items (e.g. a laptop) from clients for repair. '
+                        'Adds a "Repairs" tab to the sidebar.',
+                    value: settingsState.showRepairsModule,
+                    onChanged: (val) {
+                      ref
+                          .read(settingsProvider.notifier)
+                          .setShowRepairsModule(val);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 16.h),
             // Bill Settings Section
             Card(
               shape: RoundedRectangleBorder(

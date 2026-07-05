@@ -225,9 +225,9 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
     final billsData = _processBillsData(customerBills);
 
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.spMin, vertical: 12.spMin),
       child: Column(
-        spacing: 12.h,
+        spacing: 12.spMin,
         children: [
           _buildCustomerDetailsCard(
             totalSpending: billsData['totalSpending'],
@@ -262,9 +262,9 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
     final billsData = _processBillsData(customerBills);
 
     return SingleChildScrollView(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.spMin, vertical: 12.spMin),
       child: Column(
-        spacing: 16.h,
+        spacing: 16.spMin,
         children: [
           _buildCustomerDetailsCard(
             totalSpending: billsData['totalSpending'],
@@ -300,11 +300,11 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
 
     return SingleChildScrollView(
       padding: EdgeInsets.symmetric(
-        horizontal: AppSizes.horizontalPaddingSm.w,
-        vertical: AppSizes.verticalPaddingLg.h,
+        horizontal: AppSizes.horizontalPaddingLg.spMin,
+        vertical: AppSizes.verticalPaddingLg.spMin,
       ),
       child: Row(
-        spacing: 16.w,
+        spacing: 16.spMin,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
@@ -390,7 +390,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
         // Summary Cards at the top
         if (bills.isNotEmpty)
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 4.w),
+            padding: EdgeInsets.symmetric(vertical: 12.spMin, horizontal: 4.spMin),
             child: Row(
               children: [
                 Expanded(
@@ -430,13 +430,13 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                               color: Colors.white,
                               size: 16.spMin,
                             ),
-                            SizedBox(width: 3.w),
+                            SizedBox(width: 3.spMin),
                             smTextBold(text: 'Total Paid'),
                           ],
                         ),
-                        SizedBox(height: 6.h),
+                        SizedBox(height: 6.spMin),
                         mdTextBold(
-                          text: '\$${totalPaid.toStringAsFixed(2)}',
+                          text: 'Rs.${totalPaid.toStringAsFixed(2)}',
                           color: Colors.white,
                         ),
                       ],
@@ -444,7 +444,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                   ),
                 ),
                 if (isPendingTab && totalPending > 0) ...[
-                  SizedBox(width: 12.w),
+                  SizedBox(width: 12.spMin),
                   Expanded(
                     child: Container(
                       padding: EdgeInsets.symmetric(
@@ -482,13 +482,13 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                 color: Colors.white,
                                 size: 16.spMin,
                               ),
-                              SizedBox(width: 3.w),
+                              SizedBox(width: 3.spMin),
                               smTextBold(text: 'Total Pending'),
                             ],
                           ),
-                          SizedBox(height: 6.h),
+                          SizedBox(height: 6.spMin),
                           mdTextBold(
-                            text: '\$${totalPending.toStringAsFixed(2)}',
+                            text: 'Rs.${totalPending.toStringAsFixed(2)}',
                             color: Colors.white,
                           ),
                         ],
@@ -503,7 +503,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
         // Bills List
         Flexible(
           child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 4.w),
+            padding: EdgeInsets.symmetric(horizontal: 4.spMin),
             itemCount: bills.length,
             itemBuilder: (context, index) {
               final bill = bills[index];
@@ -527,7 +527,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                 },
                 child: Card(
                   elevation: 2,
-                  margin: EdgeInsets.symmetric(vertical: 6.h),
+                  margin: EdgeInsets.symmetric(vertical: 6.spMin),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12.r),
                     side: BorderSide(
@@ -544,10 +544,10 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                         AppSizes.borderRadiusSm.r,
                       ),
                     ),
-                    tilePadding: EdgeInsets.only(right: 6.w),
+                    tilePadding: EdgeInsets.only(right: 6.spMin),
                     leading: Container(
-                      height: 65.h,
-                      width: 60.h,
+                      height: 65.spMin,
+                      width: 60.spMin,
                       decoration: BoxDecoration(
                         color:
                             isPaid
@@ -578,7 +578,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                             ),
                             // const Spacer(),
                             Padding(
-                              padding: EdgeInsets.only(top: 4.h),
+                              padding: EdgeInsets.only(top: 4.spMin),
                               child: Row(
                                 children: [
                                   AppIcon(
@@ -588,7 +588,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                     size: 12.spMin,
                                     color: Colors.grey,
                                   ),
-                                  SizedBox(width: 4.w),
+                                  SizedBox(width: 4.spMin),
                                   xsText(
                                     text: DateFormat(
                                       'dd MMM yyyy, HH:mm',
@@ -603,8 +603,8 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                         Center(
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                              horizontal: 8.w,
-                              vertical: 4.h,
+                              horizontal: 8.spMin,
+                              vertical: 4.spMin,
                             ),
                             decoration: BoxDecoration(
                               color:
@@ -620,7 +620,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                 text:
                                     isPaid
                                         ? 'PAID'
-                                        : '\$${pendingAmount.toStringAsFixed(2)} Due',
+                                        : 'Rs.${pendingAmount.toStringAsFixed(2)} Due',
                                 color: isPaid ? Colors.green : Colors.orange,
                               ),
                             ),
@@ -631,8 +631,8 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                     children: [
                       Container(
                         margin: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 12.h,
+                          horizontal: 16.spMin,
+                          vertical: 12.spMin,
                         ),
                         decoration: BoxDecoration(
                           color:
@@ -657,8 +657,8 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                 ),
                               ),
                               padding: EdgeInsets.symmetric(
-                                vertical: 12.h,
-                                horizontal: 12.w,
+                                vertical: 12.spMin,
+                                horizontal: 12.spMin,
                               ),
                               child: Row(
                                 children: [
@@ -704,8 +704,8 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                         ? Colors.transparent
                                         : Colors.grey.withValues(alpha: 0.05),
                                 padding: EdgeInsets.symmetric(
-                                  vertical: 10.h,
-                                  horizontal: 12.w,
+                                  vertical: 10.spMin,
+                                  horizontal: 12.spMin,
                                 ),
                                 child: Row(
                                   children: [
@@ -727,7 +727,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                       flex: 1,
                                       child: smText(
                                         text:
-                                            '\$${item.price.toStringAsFixed(2)}',
+                                            'Rs.${item.price.toStringAsFixed(2)}',
                                         textAlign: TextAlign.right,
                                       ),
                                     ),
@@ -735,7 +735,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                       flex: 1,
                                       child: smText(
                                         text:
-                                            '\$${itemSubtotal.toStringAsFixed(2)}',
+                                            'Rs.${itemSubtotal.toStringAsFixed(2)}',
                                         textAlign: TextAlign.right,
                                       ),
                                     ),
@@ -748,13 +748,13 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
 
                             // Bill Summary
                             Container(
-                              padding: EdgeInsets.all(12.w),
+                              padding: EdgeInsets.all(12.spMin),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   // Subtotal
                                   Padding(
-                                    padding: EdgeInsets.only(bottom: 6.h),
+                                    padding: EdgeInsets.only(bottom: 6.spMin),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -762,7 +762,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                         smText(text: 'Subtotal:'),
                                         smText(
                                           text:
-                                              '\$${subtotal.toStringAsFixed(2)}',
+                                              'Rs.${subtotal.toStringAsFixed(2)}',
                                         ),
                                       ],
                                     ),
@@ -770,7 +770,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                   // Discount
                                   if (bill.discount > 0)
                                     Padding(
-                                      padding: EdgeInsets.only(bottom: 6.h),
+                                      padding: EdgeInsets.only(bottom: 6.spMin),
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
@@ -781,7 +781,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                           ),
                                           smText(
                                             text:
-                                                '- \$${bill.discount.toStringAsFixed(2)}',
+                                                '- Rs.${bill.discount.toStringAsFixed(2)}',
                                             color: Colors.green,
                                           ),
                                         ],
@@ -790,7 +790,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                   Divider(),
                                   // Total (Subtotal - Discount)
                                   Padding(
-                                    padding: EdgeInsets.only(bottom: 8.h),
+                                    padding: EdgeInsets.only(bottom: 8.spMin),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
@@ -798,7 +798,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                         mdTextBold(text: 'Total:'),
                                         mdTextBold(
                                           text:
-                                              '\$${finalAmount.toStringAsFixed(2)}',
+                                              'Rs.${finalAmount.toStringAsFixed(2)}',
                                         ),
                                       ],
                                     ),
@@ -806,7 +806,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                   // Paid Amount
                                   if (bill.paidAmount > 0)
                                     Padding(
-                                      padding: EdgeInsets.only(bottom: 6.h),
+                                      padding: EdgeInsets.only(bottom: 6.spMin),
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
@@ -817,7 +817,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                           ),
                                           smText(
                                             text:
-                                                '\$${bill.paidAmount.toStringAsFixed(2)}',
+                                                'Rs.${bill.paidAmount.toStringAsFixed(2)}',
                                             color: Colors.green,
                                           ),
                                         ],
@@ -829,8 +829,8 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                     Container(
                                       width: double.infinity,
                                       padding: EdgeInsets.symmetric(
-                                        horizontal: 12.w,
-                                        vertical: 8.h,
+                                        horizontal: 12.spMin,
+                                        vertical: 8.spMin,
                                       ),
                                       decoration: BoxDecoration(
                                         color: Colors.red.withValues(
@@ -850,7 +850,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                           ),
                                           smTextBold(
                                             text:
-                                                '\$${pendingAmount.toStringAsFixed(2)}',
+                                                'Rs.${pendingAmount.toStringAsFixed(2)}',
                                             color: Colors.red,
                                           ),
                                         ],
@@ -908,7 +908,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
             child: Row(
               children: [
                 Container(
-                  padding: EdgeInsets.all(4.w),
+                  padding: EdgeInsets.all(4.spMin),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(
@@ -922,13 +922,13 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                     size: 20.spMin,
                   ),
                 ),
-                SizedBox(width: 6.w),
+                SizedBox(width: 6.spMin),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       lgTextBold(text: 'Customer Details', color: Colors.white),
-                      SizedBox(height: 2.h),
+                      SizedBox(height: 2.spMin),
                       smText(
                         text: 'ID: ${widget.customer.id.substring(0, 8)}',
                         color: Colors.white70,
@@ -942,7 +942,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
 
           // Content
           Padding(
-            padding: EdgeInsets.all(10.w),
+            padding: EdgeInsets.all(10.spMin),
             child:
                 ref.watch(customerDetailsProvider).isEditing
                     ? Form(
@@ -965,7 +965,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                 (value) =>
                                     value!.isEmpty ? 'Name is required' : null,
                           ),
-                          SizedBox(height: 6.h),
+                          SizedBox(height: 6.spMin),
                           CustomTextField(
                             controller: _addressController,
                             label: 'Address',
@@ -977,7 +977,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                             ),
                             filled: true,
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: 12.spMin),
                           CustomTextField(
                             controller: _phoneController,
                             label: 'Phone Number',
@@ -990,7 +990,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                             filled: true,
                             keyboardType: TextInputType.phone,
                           ),
-                          SizedBox(height: 20.h),
+                          SizedBox(height: 20.spMin),
                           Row(
                             children: [
                               Expanded(
@@ -1004,7 +1004,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                   label: smTextBold(text: 'Save Changes'),
                                   style: ElevatedButton.styleFrom(
                                     padding: EdgeInsets.symmetric(
-                                      vertical: 12.h,
+                                      vertical: 12.spMin,
                                     ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10.r),
@@ -1012,7 +1012,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 10.w),
+                              SizedBox(width: 10.spMin),
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: _toggleEditMode,
@@ -1024,7 +1024,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                                   label: smTextBold(text: 'Cancel'),
                                   style: OutlinedButton.styleFrom(
                                     padding: EdgeInsets.symmetric(
-                                      vertical: 12.h,
+                                      vertical: 12.spMin,
                                     ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10.r),
@@ -1047,7 +1047,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                           Icons.person_outline,
                           win11IconPath: ImageAssets.win11People,
                         ),
-                        SizedBox(height: 10.h),
+                        SizedBox(height: 10.spMin),
                         infoRow(
                           context,
                           "Address",
@@ -1057,7 +1057,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                           Icons.location_on_outlined,
                           win11IconPath: ImageAssets.win11Location,
                         ),
-                        SizedBox(height: 10.h),
+                        SizedBox(height: 10.spMin),
                         infoRow(
                           context,
                           "Phone",
@@ -1067,7 +1067,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                           Icons.phone_outlined,
                           win11IconPath: ImageAssets.win11Phone,
                         ),
-                        SizedBox(height: 10.h),
+                        SizedBox(height: 10.spMin),
                         infoRow(
                           context,
                           "Total Visits",
@@ -1075,19 +1075,19 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                           Icons.shopping_bag_outlined,
                           win11IconPath: ImageAssets.win11Checkout,
                         ),
-                        SizedBox(height: 10.h),
+                        SizedBox(height: 10.spMin),
                         infoRow(
                           context,
                           "Total Spending",
-                          '\$${totalSpending.toStringAsFixed(2)}',
+                          'Rs.${totalSpending.toStringAsFixed(2)}',
                           Icons.attach_money_outlined,
                           win11IconPath: ImageAssets.win11DollarBag,
                         ),
-                        SizedBox(height: 10.h),
+                        SizedBox(height: 10.spMin),
                         infoRow(
                           context,
                           "Pending Amount",
-                          '\$${totalPending.toStringAsFixed(2)}',
+                          'Rs.${totalPending.toStringAsFixed(2)}',
                           Icons.pending_actions_outlined,
                           win11IconPath: ImageAssets.win11Pending,
                         ),
@@ -1137,7 +1137,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
             child: Row(
               children: [
                 Container(
-                  padding: EdgeInsets.all(4.w),
+                  padding: EdgeInsets.all(4.spMin),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(
@@ -1151,13 +1151,13 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                     size: 20.spMin,
                   ),
                 ),
-                SizedBox(width: 6.w),
+                SizedBox(width: 6.spMin),
                 lgTextBold(text: 'Bills History', color: Colors.white),
                 const Spacer(),
                 Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 5.h,
+                    horizontal: 10.spMin,
+                    vertical: 5.spMin,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
@@ -1203,11 +1203,11 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                           win11IconPath: ImageAssets.win11Done,
                           size: 16.spMin,
                         ),
-                        SizedBox(width: 6.w),
+                        SizedBox(width: 6.spMin),
                         Flexible(
                           child: smTextBold(
                             text:
-                                'Paid (\$${completedTotal.toStringAsFixed(0)})',
+                                'Paid (Rs.${completedTotal.toStringAsFixed(0)})',
                           ),
                         ),
                       ],
@@ -1222,11 +1222,11 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                           win11IconPath: ImageAssets.win11Pending,
                           size: 16.spMin,
                         ),
-                        SizedBox(width: 6.w),
+                        SizedBox(width: 6.spMin),
                         Flexible(
                           child: smTextBold(
                             text:
-                                'Unpaid (\$${pendingTotal.toStringAsFixed(0)})',
+                                'Unpaid (Rs.${pendingTotal.toStringAsFixed(0)})',
                           ),
                         ),
                       ],
@@ -1237,7 +1237,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                   fontSize: 13.spMin,
                   fontWeight: FontWeight.bold,
                 ),
-                labelPadding: EdgeInsets.symmetric(vertical: 4.h),
+                labelPadding: EdgeInsets.symmetric(vertical: 4.spMin),
                 indicatorSize: TabBarIndicatorSize.tab,
                 padding: EdgeInsets.zero,
                 dividerColor: Colors.transparent,
@@ -1254,9 +1254,14 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
             ),
           ),
 
-          // TabBarView
+          // TabBarView — height scales with the viewport (with a sensible
+          // floor) so the bills list gets room on desktop without a cramped
+          // fixed box on smaller windows.
           SizedBox(
-            height: 500.h,
+            height: (MediaQuery.sizeOf(context).height * 0.6).clamp(
+              360.0,
+              700.0,
+            ),
             child: TabBarView(
               controller: _tabController,
               children: [
@@ -1271,7 +1276,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                             size: 60.spMin,
                             color: Colors.grey.withValues(alpha: 0.3),
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: 12.spMin),
                           mdText(text: 'No paid bills yet', color: Colors.grey),
                         ],
                       ),
@@ -1288,7 +1293,7 @@ class CustomerDetailsScreenState extends ConsumerState<CustomerDetailsScreen>
                             size: 60.spMin,
                             color: Colors.grey.withValues(alpha: 0.3),
                           ),
-                          SizedBox(height: 12.h),
+                          SizedBox(height: 12.spMin),
                           mdText(text: 'No pending bills', color: Colors.grey),
                         ],
                       ),
@@ -1381,11 +1386,11 @@ Widget infoRow(
         width: 1,
       ),
     ),
-    padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 8.w),
+    padding: EdgeInsets.symmetric(horizontal: 6.spMin, vertical: 8.spMin),
     child: Row(
       children: [
         Container(
-          padding: EdgeInsets.all(4.w),
+          padding: EdgeInsets.all(4.spMin),
           decoration: BoxDecoration(
             color: AppColors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8.r),
@@ -1398,13 +1403,13 @@ Widget infoRow(
             color: AppColors.primary,
           ),
         ),
-        SizedBox(width: 6.w),
+        SizedBox(width: 6.spMin),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               smText(text: title, color: Colors.grey),
-              SizedBox(height: 2.h),
+              SizedBox(height: 2.spMin),
               smTextBold(text: val),
             ],
           ),
@@ -1431,7 +1436,7 @@ PopupMenuItem<String> _menuItem({
           win11IconPath: win11IconPath,
         ),
         // Icon(icon, size: 18.spMin),
-        SizedBox(width: 12.w),
+        SizedBox(width: 12.spMin),
         Text(text, style: TextStyle(fontSize: 14.spMin)),
       ],
     ),

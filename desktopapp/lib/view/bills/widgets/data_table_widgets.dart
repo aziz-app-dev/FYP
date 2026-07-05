@@ -194,7 +194,7 @@ class DataTableWidget extends ConsumerWidget {
                         SizedBox(width: 8.w),
                         // Status
                         smTextBold(
-                          text: '\$${bill.totalAmount.toStringAsFixed(2)}',
+                          text: 'Rs.${bill.totalAmount.toStringAsFixed(2)}',
                           color: AppColors.primary,
                         ),
                       ],
@@ -474,7 +474,7 @@ class DataTableWidget extends ConsumerWidget {
                   DataCell(TableDataCellText(text: '${bill.items.length}')),
                   DataCell(
                     TableDataCellText(
-                      text: '\$${bill.totalAmount.toStringAsFixed(2)}',
+                      text: 'Rs.${bill.totalAmount.toStringAsFixed(2)}',
                       color: Colors.green.shade700,
                     ),
                   ),

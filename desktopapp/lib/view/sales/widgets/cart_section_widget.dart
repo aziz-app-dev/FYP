@@ -54,7 +54,7 @@
 //                                 mdTextBold(text: 'SubTotal'),
 //                                 mdTextBold(
 //                                   text:
-//                                       '\$${salesState.totalAmount.toStringAsFixed(0)}',
+//                                       'Rs.${salesState.totalAmount.toStringAsFixed(0)}',
 //                                 ),
 //                               ],
 //                             ),
@@ -328,7 +328,7 @@ Widget buildCartSection(
                                       mdTextBold(text: 'Total'),
                                       mdTextBold(
                                         text:
-                                            '\$${(salesState.totalAmount - salesState.discount).toStringAsFixed(0)}',
+                                            'Rs.${(salesState.totalAmount - salesState.discount).toStringAsFixed(0)}',
                                       ),
                                     ],
                                   ),

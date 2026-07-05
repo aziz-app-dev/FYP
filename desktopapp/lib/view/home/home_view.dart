@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:desktopapp/res/components/app_bar_widget.dart';
 import 'package:desktopapp/utils/app_sizes.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +13,7 @@ import '../add_product/slection_card_view.dart';
 import '../shopping_list/shopping_list_view.dart';
 import 'rapper.dart';
 import 'section_products_view.dart';
+import 'widgets/banner_carousel.dart';
 import 'widgets/beands_widget.dart';
 import 'widgets/cat_widget.dart';
 import 'widgets/header_wiget.dart';
@@ -28,6 +27,9 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final homeState = ref.watch(homePageProvider);
+    final showShoppingList = ref.watch(
+      settingsProvider.select((s) => s.showShoppingListModule),
+    );
 
     return Scaffold(
       appBar: AppBarWidget.customAppBar(
@@ -102,22 +104,24 @@ class HomePage extends ConsumerWidget {
               defaultIcon: Icons.inventory_2,
             ),
           ),
-          const SizedBox(height: 12),
-          FloatingActionButton(
-            heroTag: 'shoppingListFab',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ShoppingListView(),
-                ),
-              );
-            },
-            child: AppIcon(
-              defaultIcon: Icons.shopping_bag,
-              win11IconPath: ImageAssets.win11List,
+          if (showShoppingList) ...[
+            const SizedBox(height: 12),
+            FloatingActionButton(
+              heroTag: 'shoppingListFab',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ShoppingListView(),
+                  ),
+                );
+              },
+              child: AppIcon(
+                defaultIcon: Icons.shopping_bag,
+                win11IconPath: ImageAssets.win11List,
+              ),
             ),
-          ),
+          ],
         ],
       ),
       body:
@@ -154,11 +158,10 @@ class HomePage extends ConsumerWidget {
           if (settings.showBannerSection &&
               settings.bannerImagePaths.isNotEmpty) {
             sections.addAll([
-              _buildBannerCarousel(
-                settings.bannerImagePaths,
-                settings.bannerAutoScroll,
-                settings.bannerScrollDuration,
-                context,
+              BannerCarousel(
+                imagePaths: settings.bannerImagePaths,
+                autoScroll: settings.bannerAutoScroll,
+                scrollDuration: settings.bannerScrollDuration,
               ),
               SizedBox(height: 24.h),
             ]);
@@ -329,81 +332,4 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildBannerCarousel(
-    List<String> imagePaths,
-    bool autoScroll,
-    int scrollDuration,
-    BuildContext context,
-  ) {
-    final double sliderHight = MediaQuery.sizeOf(context).width;
-    return CarouselSlider(
-      options: CarouselOptions(
-        height:
-            AppSizes.isMobile(context)
-                ? sliderHight * 0.350
-                : sliderHight * 0.150,
-        // height: sliderHight,
-        autoPlay: autoScroll,
-        autoPlayInterval: Duration(seconds: scrollDuration),
-        autoPlayAnimationDuration: const Duration(milliseconds: 800),
-        autoPlayCurve: Curves.fastOutSlowIn,
-        enlargeCenterPage: true,
-        viewportFraction: 1,
-        // aspectRatio: 16.spMin / 9.spMin,
-      ),
-      items:
-          imagePaths.map((imagePath) {
-            return Builder(
-              builder: (BuildContext context) {
-                return Container(
-                  height: sliderHight,
-                  width: MediaQuery.of(context).size.width,
-                  // margin: EdgeInsets.symmetric(horizontal: 5.w),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(
-                      AppSizes.borderRadiusMd.r,
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(
-                      AppSizes.borderRadiusMd.r,
-                    ),
-                    child: Image.file(
-                      File(imagePath),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade300,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                AppIcon(
-                                  win11IconPath: ImageAssets.win11List,
-                                  defaultIcon: Icons.broken_image,
-                                  size: 48.spMin,
-                                  color: Colors.grey,
-                                ),
-
-                                SizedBox(height: 8.h),
-                                Text(
-                                  'Image not found',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12.spMin,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                );
-              },
-            );
-          }).toList(),
-    );
-  }
 }

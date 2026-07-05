@@ -236,7 +236,7 @@ class _MobileCartBottomSheetState extends ConsumerState<MobileCartBottomSheet> {
                         mdText(text: 'Subtotal'),
                         mdText(
                           text:
-                              '\$${salesState.totalAmount.toStringAsFixed(2)}',
+                              'Rs.${salesState.totalAmount.toStringAsFixed(2)}',
                         ),
                       ],
                     ),
@@ -248,7 +248,7 @@ class _MobileCartBottomSheetState extends ConsumerState<MobileCartBottomSheet> {
                           mdText(text: 'Discount'),
                           mdText(
                             text:
-                                '-\$${salesState.discount.toStringAsFixed(2)}',
+                                '-Rs.${salesState.discount.toStringAsFixed(2)}',
                             color: Colors.red,
                           ),
                         ],
@@ -262,7 +262,7 @@ class _MobileCartBottomSheetState extends ConsumerState<MobileCartBottomSheet> {
                         lgTextBold(text: 'Total'),
                         lgTextBold(
                           text:
-                              '\$${(salesState.totalAmount - salesState.discount).toStringAsFixed(2)}',
+                              'Rs.${(salesState.totalAmount - salesState.discount).toStringAsFixed(2)}',
                           color: AppColors.primary,
                         ),
                       ],

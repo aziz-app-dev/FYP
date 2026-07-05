@@ -38,13 +38,17 @@ final categoriesProvider = FutureProvider.autoDispose<List<Category>>((
 
 class AddProductScreen extends ConsumerStatefulWidget {
   final Product? product;
-  final bool isService;
+
+  /// Whether this is a service. Pass `null` to let the user choose the type
+  /// on this same page (the two selection cards are shown first). When
+  /// editing an existing product the type is taken from the product.
+  final bool? isService;
   final String? initialName;
 
   const AddProductScreen({
     super.key,
     this.product,
-    required this.isService,
+    this.isService,
     this.initialName,
   });
 
@@ -54,6 +58,16 @@ class AddProductScreen extends ConsumerStatefulWidget {
 
 class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  /// The currently selected type. Null until the user picks one (only
+  /// possible when [widget.isService] was not supplied and we're not editing).
+  bool? _isService;
+
+  /// True once a type has been chosen (or supplied) so the form can show.
+  bool get _hasType => _isService != null;
+
+  /// Type cannot be changed while editing an existing product.
+  bool get _typeLocked => widget.product != null;
 
   // Declare controllers
   late TextEditingController _nameController;
@@ -87,6 +101,10 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   @override
   void initState() {
     super.initState();
+    // Determine the initial type: explicit param > existing product >
+    // default to Item (isService = false) so the form is ready immediately.
+    _isService = widget.isService ?? widget.product?.isService ?? false;
+
     // Initialize controllers with initial values from formState
     final formState = ref.read(productFormProvider(widget.product));
     // Use initialName if provided, otherwise use formState name
@@ -140,18 +158,127 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final typeLabel = _isService == null ? 'Item' : (_isService! ? 'Service' : 'Item');
     return Scaffold(
       appBar: AppBarWidget.customAppBar(
         title:
             widget.product == null
-                ? 'Add New ${widget.isService ? 'Service' : 'Item'}'
-                : 'Edit ${widget.isService ? 'Service' : 'Item'}',
+                ? (_hasType ? 'Add New $typeLabel' : 'Add New Item/Service')
+                : 'Edit $typeLabel',
         context: context,
       ),
       body: ResponsiveWrapper(
         mobile: _buildMobileForm(context, ref),
         tablet: _buildTabletForm(context, ref),
         desktop: _buildDesktopForm(context, ref),
+      ),
+    );
+  }
+
+  /// Select a type and (when not editing) update the form state accordingly.
+  void _selectType(bool isService) {
+    if (_typeLocked) return;
+    setState(() => _isService = isService);
+    ref.read(productFormProvider(widget.product).notifier).updateIsService(isService);
+  }
+
+  /// The two Item / Service selection cards shown at the top of the page.
+  Widget _buildTypeSelector(BuildContext context) {
+    return Row(
+      children: [
+        _buildTypeCard(
+          title: 'Services',
+          win11IconPath: ImageAssets.win11Services,
+          icon: Icons.build,
+          isService: true,
+        ),
+        SizedBox(width: 16.w),
+        _buildTypeCard(
+          title: 'Items',
+          win11IconPath: ImageAssets.win11OpenBox,
+          icon: Icons.inventory,
+          isService: false,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTypeCard({
+    required String title,
+    required String win11IconPath,
+    required IconData icon,
+    required bool isService,
+  }) {
+    final bool selected = _isService == isService;
+    // Compact once a choice has been made; large prompt cards before that.
+    final bool compact = _hasType;
+    final Color baseColor =
+        selected ? AppColors.primary : AppColors.primary.withValues(alpha: 0.4);
+
+    return Expanded(
+      child: Opacity(
+        opacity: _typeLocked && !selected ? 0.5 : 1,
+        child: GestureDetector(
+          onTap: _typeLocked ? null : () => _selectType(isService),
+          child: Card(
+            elevation: selected ? 6 : 2,
+            shadowColor: Colors.black.withValues(alpha: 0.1),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Container(
+              height: compact ? 70.h : 200.h,
+              decoration: BoxDecoration(
+                color: baseColor.withValues(alpha: selected ? 0.2 : 0.08),
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(
+                  color: selected ? AppColors.primary : baseColor,
+                  width: selected ? 1.8 : 1.2,
+                ),
+              ),
+              child:
+                  compact
+                      ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AppIcon(
+                            win11IconPath: win11IconPath,
+                            defaultIcon: icon,
+                            size: 24.spMin,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 15.spMin,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      )
+                      : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AppIcon(
+                            win11IconPath: win11IconPath,
+                            defaultIcon: icon,
+                            size: 50.spMin,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(height: 10.h),
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 20.spMin,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -173,7 +300,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   Widget _buildDesktopForm(BuildContext context, WidgetRef ref) {
     return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 600.w),
+        constraints: BoxConstraints(maxWidth: 900.w),
         child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 32.h),
           child: _buildForm(context, ref),
@@ -182,14 +309,16 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     );
   }
 
+  /// Whether the current layout should place two fields per row.
+  bool _isTwoColumn(BuildContext context) =>
+      AppSizes.isTablet(context) || AppSizes.isDesktop(context);
+
   Widget _buildForm(BuildContext context, WidgetRef ref) {
     final formState = ref.watch(productFormProvider(widget.product));
     final formNotifier = ref.read(productFormProvider(widget.product).notifier);
     final isEditing = widget.product != null;
-    final buttonText =
-        isEditing
-            ? 'Update ${widget.isService ? 'Service' : 'Item'}'
-            : 'Add ${widget.isService ? 'Service' : 'Item'}';
+    final typeWord = (_isService ?? false) ? 'Service' : 'Item';
+    final buttonText = isEditing ? 'Update $typeWord' : 'Add $typeWord';
     final fieldConfigs = formState.fieldConfigs;
     final fieldErrors =
         formState.fieldErrors; // Get from state instead of local
@@ -204,6 +333,28 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Step 1: Item / Service selection (kept on the same page).
+            _buildTypeSelector(context),
+            SizedBox(height: 20.h),
+
+            // Until a type is chosen, prompt and stop here.
+            if (!_hasType)
+              Padding(
+                padding: EdgeInsets.only(top: 12.h),
+                child: Text(
+                  'Select Item or Service to continue',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14.spMin,
+                    color:
+                        Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.grey300
+                            : AppColors.grey600,
+                  ),
+                ),
+              ),
+
+            if (_hasType) ...[
             // Image Picker
             if (fieldConfigs['imageFile']!.isShow) ...[
               Stack(
@@ -303,7 +454,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
               SizedBox(height: 20.h),
             ],
 
-            // Name Field
+            // Name Field — always full width (one line).
             if (fieldConfigs['name']!.isShow)
               CustomTextField(
                 controller: _nameController,
@@ -340,12 +491,15 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
               ),
             SizedBox(height: 16.h),
 
-            // Other Fields
-            ..._buildOtherFields(
-              formState,
-              formNotifier,
-              widget.isService,
+            // Other Fields — paired two-per-row on tablet/desktop.
+            ..._layoutFields(
               context,
+              _buildOtherFields(
+                formState,
+                formNotifier,
+                _isService ?? false,
+                context,
+              ),
             ),
 
             // // Timestamps
@@ -408,7 +562,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     final success = await formNotifier.submitForm();
                     if (success && mounted) {
                       final successMessage =
-                          '${widget.isService ? 'Service' : 'Product'} ${widget.product != null ? 'updated' : 'added'} successfully!';
+                          '${(_isService ?? false) ? 'Service' : 'Product'} ${widget.product != null ? 'updated' : 'added'} successfully!';
 
                       // Clear all text controllers
                       _nameController.clear();
@@ -433,10 +587,47 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                 },
               ),
             ),
+            ], // end of if (_hasType)
           ],
         ),
       ),
     );
+  }
+
+  /// Arranges the given field widgets vertically (mobile) or two-per-row
+  /// (tablet/desktop), inserting consistent spacing between rows.
+  List<Widget> _layoutFields(BuildContext context, List<Widget> fields) {
+    const double gap = 16;
+    if (!_isTwoColumn(context)) {
+      // Single column: one field per row with spacing between.
+      final out = <Widget>[];
+      for (var i = 0; i < fields.length; i++) {
+        out.add(fields[i]);
+        if (i != fields.length - 1) out.add(SizedBox(height: gap.h));
+      }
+      return out;
+    }
+
+    // Two columns: pair fields up.
+    final rows = <Widget>[];
+    for (var i = 0; i < fields.length; i += 2) {
+      final left = fields[i];
+      final hasRight = i + 1 < fields.length;
+      rows.add(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: left),
+            SizedBox(width: gap.w),
+            Expanded(
+              child: hasRight ? fields[i + 1] : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      );
+      if (i + 2 < fields.length) rows.add(SizedBox(height: gap.h));
+    }
+    return rows;
   }
 
   List<Widget> _buildOtherFields(
@@ -488,7 +679,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
           },
         ),
       );
-      fields.add(SizedBox(height: 16.h));
     }
 
     // Product-specific fields
@@ -533,7 +723,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             },
           ),
         );
-        fields.add(SizedBox(height: 16.h));
       }
 
       if (fieldConfigs['stock']!.isShow) {
@@ -573,7 +762,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             },
           ),
         );
-        fields.add(SizedBox(height: 16.h));
       }
 
       // Barcode Field
@@ -631,7 +819,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             },
           ),
         );
-        fields.add(SizedBox(height: 16.h));
       }
 
       if (fieldConfigs['condition']!.isShow) {
@@ -664,7 +851,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             },
           ),
         );
-        fields.add(SizedBox(height: 12.h));
       }
 
       if (fieldConfigs['brand']!.isShow) {
@@ -777,7 +963,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                 ),
           ),
         );
-        fields.add(SizedBox(height: 16.h));
       }
 
       // Category Dropdown
@@ -892,7 +1077,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                 ),
           ),
         );
-        fields.add(SizedBox(height: 16.h));
       }
     }
 
@@ -934,7 +1118,6 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
           },
         ),
       );
-      fields.add(SizedBox(height: 16.h));
     }
 
     return fields;

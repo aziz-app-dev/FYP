@@ -231,7 +231,7 @@ class CustomerReportPDFGenerator {
         pw.Expanded(
           child: _summaryCard(
             'Total Spending',
-            '\$${totalSpending.toStringAsFixed(2)}',
+            'Rs.${totalSpending.toStringAsFixed(2)}',
             PdfColors.green700,
             PdfColors.green50,
           ),
@@ -240,7 +240,7 @@ class CustomerReportPDFGenerator {
         pw.Expanded(
           child: _summaryCard(
             'Pending Amount',
-            '\$${totalPending.toStringAsFixed(2)}',
+            'Rs.${totalPending.toStringAsFixed(2)}',
             totalPending > 0 ? PdfColors.red700 : PdfColors.green700,
             totalPending > 0 ? PdfColors.red50 : PdfColors.green50,
           ),
@@ -411,11 +411,11 @@ class CustomerReportPDFGenerator {
                     _tableCell(item.name),
                     _tableCell(qty.toString(), align: pw.TextAlign.center),
                     _tableCell(
-                      '\$${item.price.toStringAsFixed(2)}',
+                      'Rs.${item.price.toStringAsFixed(2)}',
                       align: pw.TextAlign.right,
                     ),
                     _tableCell(
-                      '\$${total.toStringAsFixed(2)}',
+                      'Rs.${total.toStringAsFixed(2)}',
                       align: pw.TextAlign.right,
                     ),
                   ],
@@ -433,29 +433,29 @@ class CustomerReportPDFGenerator {
                 width: 150,
                 child: pw.Column(
                   children: [
-                    _summaryRow('Subtotal', '\$${bill.totalAmount.toStringAsFixed(2)}'),
+                    _summaryRow('Subtotal', 'Rs.${bill.totalAmount.toStringAsFixed(2)}'),
                     if (bill.discount > 0)
                       _summaryRow(
                         'Discount',
-                        '-\$${bill.discount.toStringAsFixed(2)}',
+                        '-Rs.${bill.discount.toStringAsFixed(2)}',
                         textColor: PdfColors.green700,
                       ),
                     pw.Divider(color: PdfColors.grey400),
                     _summaryRow(
                       'Total',
-                      '\$${finalAmount.toStringAsFixed(2)}',
+                      'Rs.${finalAmount.toStringAsFixed(2)}',
                       isBold: true,
                     ),
                     if (bill.paidAmount > 0)
                       _summaryRow(
                         'Paid',
-                        '\$${bill.paidAmount.toStringAsFixed(2)}',
+                        'Rs.${bill.paidAmount.toStringAsFixed(2)}',
                         textColor: PdfColors.green700,
                       ),
                     if (pendingAmount > 0)
                       _summaryRow(
                         'Due',
-                        '\$${pendingAmount.toStringAsFixed(2)}',
+                        'Rs.${pendingAmount.toStringAsFixed(2)}',
                         textColor: PdfColors.red700,
                         isBold: true,
                       ),

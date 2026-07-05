@@ -9,7 +9,8 @@ import 'package:riverpod/legacy.dart';
 class HomePageNotifier extends StateNotifier<HomePageState> {
   final DatabaseService _dbService;
 
-  HomePageNotifier(this._dbService) : super(const HomePageState()) {
+  HomePageNotifier(this._dbService)
+    : super(const HomePageState(isLoading: true)) {
     loadHomeData();
   }
 
@@ -21,6 +22,11 @@ class HomePageNotifier extends StateNotifier<HomePageState> {
   /// derive every section from the in-memory lists, and emit a single state
   /// update — which removes the startup lag and the redundant rebuilds.
   Future<void> loadHomeData() async {
+    // Yield once so we never mutate state synchronously during the build
+    // that first reads this (autoDispose) provider — doing so triggers a
+    // "setState() called during build" error.
+    await Future<void>.microtask(() {});
+    if (!mounted) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       // Read each box exactly once, in parallel.

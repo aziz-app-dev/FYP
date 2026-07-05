@@ -43,7 +43,7 @@
 //                     overflow: TextOverflow.ellipsis,
 //                   ),
 //                   Text(
-//                     '\$${product.price.toStringAsFixed(0)}',
+//                     'Rs.${product.price.toStringAsFixed(0)}',
 //                     style: TextStyle(fontSize: 12.spMin, color: Colors.green),
 //                   ),
 //                 ],

@@ -542,7 +542,7 @@ class EditBillScreenState extends ConsumerState<EditBillScreen> {
     return CustomTextField(
       controller: discountController,
       hintText:
-          '${customerFormState.fieldConfigs['discount']!.hintText} (max: \$${totalAmount.toStringAsFixed(0)})',
+          '${customerFormState.fieldConfigs['discount']!.hintText} (max: Rs.${totalAmount.toStringAsFixed(0)})',
       label: customerFormState.fieldConfigs['discount']!.title,
       keyboardType: TextInputType.number,
       filled: true,
@@ -566,7 +566,7 @@ class EditBillScreenState extends ConsumerState<EditBillScreen> {
             return 'Enter a valid number';
           }
           if (amt > totalAmount) {
-            return 'Cannot exceed total: \$${totalAmount.toStringAsFixed(0)}';
+            return 'Cannot exceed total: Rs.${totalAmount.toStringAsFixed(0)}';
           }
           if (amt < 0) {
             return 'Discount cannot be negative';
@@ -613,7 +613,7 @@ class EditBillScreenState extends ConsumerState<EditBillScreen> {
         CustomTextField(
           controller: paidAmountController,
           hintText:
-              '${customerFormState.fieldConfigs['paidAmount']!.hintText} (max: \$${totalAfterDiscount.toStringAsFixed(0)})',
+              '${customerFormState.fieldConfigs['paidAmount']!.hintText} (max: Rs.${totalAfterDiscount.toStringAsFixed(0)})',
           label: customerFormState.fieldConfigs['paidAmount']!.title,
           keyboardType: TextInputType.number,
           filled: true,
@@ -639,7 +639,7 @@ class EditBillScreenState extends ConsumerState<EditBillScreen> {
                 return 'Enter a valid number';
               }
               if (amt > totalAfterDiscount) {
-                return 'Cannot exceed total: \$${totalAfterDiscount.toStringAsFixed(0)}';
+                return 'Cannot exceed total: Rs.${totalAfterDiscount.toStringAsFixed(0)}';
               }
               if (amt < 0) {
                 return 'Amount cannot be negative';
@@ -663,7 +663,7 @@ class EditBillScreenState extends ConsumerState<EditBillScreen> {
               color: Colors.grey,
             ),
             mdText(
-              text: '\$${pendingAmount.toStringAsFixed(0)}',
+              text: 'Rs.${pendingAmount.toStringAsFixed(0)}',
               color: pendingAmount > 0 ? Colors.red : Colors.green,
             ),
           ],
@@ -802,10 +802,10 @@ class EditBillScreenState extends ConsumerState<EditBillScreen> {
                             ),
                           ),
                           DataCell(
-                            smText(text: '\$${item.price.toStringAsFixed(2)}'),
+                            smText(text: 'Rs.${item.price.toStringAsFixed(2)}'),
                           ),
                           DataCell(
-                            smText(text: '\$${itemTotal.toStringAsFixed(2)}'),
+                            smText(text: 'Rs.${itemTotal.toStringAsFixed(2)}'),
                           ),
                           DataCell(
                             IconButton(

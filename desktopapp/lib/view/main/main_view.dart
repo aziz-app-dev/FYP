@@ -10,6 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../res/components/app_icon.dart';
 import '../../view_models/providers/profile_provider.dart';
+import '../../view_models/providers/settings_provider.dart';
 
 // Riverpod provider for selected index
 final selectedIndexProvider = StateProvider<int>((ref) => 0);
@@ -30,6 +31,10 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
 
   Widget buildDesktopDrawer(WidgetRef ref) {
     final selectedIndex = ref.watch(selectedIndexProvider);
+    final showRepairs = ref.watch(
+      settingsProvider.select((s) => s.showRepairsModule),
+    );
+    final navItems = navItemsFor(showRepairs: showRepairs);
     final Color activeIconColor = AppColors.primary;
     final Color inactiveIconColor = Colors.grey[600]!;
     return Container(
@@ -41,7 +46,7 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
       child: Column(
         children: [
           infoCard(ref),
-          ...desktopNavItems.asMap().entries.map((entry) {
+          ...navItems.asMap().entries.map((entry) {
             final index = entry.key;
             final item = entry.value;
             return Padding(
@@ -133,6 +138,10 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
 
   Widget buildMobileDrawer(WidgetRef ref) {
     final selectedIndex = ref.watch(selectedIndexProvider);
+    final showRepairs = ref.watch(
+      settingsProvider.select((s) => s.showRepairsModule),
+    );
+    final navItems = navItemsFor(showRepairs: showRepairs);
     final Color activeIconColor = AppColors.primary;
     final Color inactiveIconColor = Colors.grey[600]!;
 
@@ -143,7 +152,7 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
             return Column(
               children: [
                 infoCard(ref),
-                ...desktopNavItems.asMap().entries.map((entry) {
+                ...navItems.asMap().entries.map((entry) {
                   final index = entry.key;
                   final item = entry.value;
                   return Padding(
@@ -251,10 +260,22 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
   //   );
   // }
 
-  Widget buildMobileBottomNavBar(WidgetRef ref) {
+  Widget buildMobileBottomNavBar(WidgetRef ref, List<NavigationItem> navItems) {
     final selectedIndex = ref.watch(selectedIndexProvider);
     final Color activeIconColor = AppColors.primary;
     final Color inactiveIconColor = Colors.grey[600]!;
+
+    // The bottom bar shows a fixed 5-tab subset. Map each tab to its position
+    // in the full nav/page list (by label) so selection stays correct even
+    // when optional modules like Repairs shift the indices.
+    int pageIndexFor(NavigationItem item) {
+      final i = navItems.indexWhere((n) => n.label == item.label);
+      return i >= 0 ? i : 0;
+    }
+
+    final selectedTab = mobileNavItems.indexWhere(
+      (item) => pageIndexFor(item) == selectedIndex,
+    );
 
     return NavigationBar(
       backgroundColor:
@@ -263,7 +284,7 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
               : Colors.white,
 
       indicatorColor: Colors.transparent,
-      selectedIndex: selectedIndex,
+      selectedIndex: selectedTab >= 0 ? selectedTab : 0,
       overlayColor: const WidgetStatePropertyAll(Colors.transparent),
 
       labelTextStyle: WidgetStatePropertyAll(
@@ -271,7 +292,10 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
       ),
 
       onDestinationSelected:
-          (index) => ref.read(selectedIndexProvider.notifier).state = index,
+          (tab) =>
+              ref.read(selectedIndexProvider.notifier).state = pageIndexFor(
+                mobileNavItems[tab],
+              ),
 
       destinations:
           mobileNavItems.map((item) {
@@ -336,8 +360,17 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = ref.watch(selectedIndexProvider);
+    final showRepairs = ref.watch(
+      settingsProvider.select((s) => s.showRepairsModule),
+    );
+    final navItems = navItemsFor(showRepairs: showRepairs);
 
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+    final pageList = pages(scaffoldKey, showRepairs: showRepairs);
+    // Guard against an out-of-range index when the Repairs module is toggled
+    // off while it (or a later page) was selected.
+    final safeIndex = selectedIndex.clamp(0, pageList.length - 1);
+
     if (AppSizes.isTablet(context)) {
       return SafeArea(
         child: Scaffold(
@@ -365,7 +398,7 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
                         padding: EdgeInsets.symmetric(horizontal: 4.w),
                         child: Divider(),
                       ),
-                      ...desktopNavItems.asMap().entries.map((entry) {
+                      ...navItems.asMap().entries.map((entry) {
                         final index = entry.key;
                         final item = entry.value;
                         return buildTabletNavItem(index, item, ref);
@@ -376,7 +409,7 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
               ),
               VerticalDivider(),
               Expanded(
-                child: pages(scaffoldKey)[selectedIndex],
+                child: pageList[safeIndex],
               ), // Pass scaffoldKey
             ],
           ),
@@ -389,7 +422,7 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
             buildDesktopDrawer(ref),
             VerticalDivider(),
             Expanded(
-              child: pages(scaffoldKey)[selectedIndex],
+              child: pageList[safeIndex],
             ), // Pass scaffoldKey
           ],
         ),
@@ -398,8 +431,8 @@ class _MainScrennState extends ConsumerState<MainScrenn> {
       return Scaffold(
         key: scaffoldKey,
         drawer: buildMobileDrawer(ref), // Always enable the drawer
-        body: pages(scaffoldKey)[selectedIndex], // Pass scaffoldKey
-        bottomNavigationBar: buildMobileBottomNavBar(ref),
+        body: pageList[safeIndex], // Pass scaffoldKey
+        bottomNavigationBar: buildMobileBottomNavBar(ref, navItems),
       );
     }
   }

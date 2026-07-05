@@ -10,7 +10,7 @@ import '../../../res/components/app_icon.dart';
 import '../../../view/widgets/cached_image_widget.dart';
 import '../../../view_models/providers/product_details_provider.dart';
 import '../../../view_models/states/product_details_state.dart';
-import '../product_details_view.dart';
+import '../../home/widgets/products_widget.dart';
 
 class MobileProductDetailsView extends ConsumerWidget {
   final Product product;
@@ -511,7 +511,9 @@ class MobileProductDetailsView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'More from ${product.brand ?? "this brand"}',
+          product.isService
+              ? 'Top Services'
+              : 'More from ${product.brand ?? "this brand"}',
           style: TextStyle(
             fontSize: 18.spMin,
             fontWeight: FontWeight.bold,
@@ -519,124 +521,9 @@ class MobileProductDetailsView extends ConsumerWidget {
           ),
         ),
         SizedBox(height: 16.spMin),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: MediaQuery.of(context).size.width >= 800 ? 4 : 2,
-            childAspectRatio: 0.75,
-            crossAxisSpacing: 12.spMin,
-            mainAxisSpacing: 12.spMin,
-          ),
-          itemCount: state.relatedProducts.length,
-          itemBuilder: (context, index) {
-            final relatedProduct = state.relatedProducts[index];
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            ProductDetailsScreen(product: relatedProduct),
-                  ),
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.grey.shade900 : Colors.white,
-                  borderRadius: BorderRadius.circular(12.spMin),
-                  border: Border.all(
-                    color: isDark ? AppColors.grey800 : AppColors.grey200,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(12.spMin),
-                          topRight: Radius.circular(12.spMin),
-                        ),
-                        child: Container(
-                          width: double.infinity,
-                          color:
-                              isDark
-                                  ? Colors.grey.shade800
-                                  : AppColors.grey100,
-                          child: AppCachedImage(
-                            imageUrl: relatedProduct.imageUrl,
-                            fit: BoxFit.cover,
-                            folder: 'products',
-                            errorWidget: Center(
-                              child: AppIcon(
-                                win11IconPath:
-                                    relatedProduct.isService
-                                        ? ImageAssets.win11Services
-                                        : ImageAssets.win11OpenBox,
-                                defaultIcon:
-                                    relatedProduct.isService
-                                        ? Icons.room_service
-                                        : Icons.inventory_2_rounded,
-                                size: 36.spMin,
-                                color: Colors.grey.shade400,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(10.spMin),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            relatedProduct.name,
-                            style: TextStyle(
-                              fontSize: 14.spMin,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: 6.spMin),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Flexible(
-                                child: Currency(
-                                  amount: relatedProduct.price,
-                                  size: 14.spMin,
-                                  fractionDigits: 0,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              if (!relatedProduct.isService &&
-                                  relatedProduct.stock != null)
-                                Text(
-                                  'Stock: ${relatedProduct.stock}',
-                                  style: TextStyle(
-                                    fontSize: 11.spMin,
-                                    color:
-                                        relatedProduct.stock! < 10
-                                            ? Colors.orange
-                                            : Colors.grey,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
+        // Reuse the same card + responsive grid as the home page so the
+        // related items match it exactly (equal width/height).
+        buildProductGrid(context, state.relatedProducts),
       ],
     );
   }

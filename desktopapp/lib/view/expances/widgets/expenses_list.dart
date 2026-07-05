@@ -129,7 +129,7 @@ Widget _buildExpenseCard(
             ),
           ),
           mdTextBold(
-            text: '\$${expense.amount.toStringAsFixed(2)}',
+            text: 'Rs.${expense.amount.toStringAsFixed(2)}',
             color: Colors.red,
           ),
         ],

@@ -100,7 +100,7 @@ Widget buildMultiCartSection(
                                     mdText(text: 'Subtotal'),
                                     mdText(
                                       text:
-                                          '\$${activeCart.totalAmount.toStringAsFixed(0)}',
+                                          'Rs.${activeCart.totalAmount.toStringAsFixed(0)}',
                                     ),
                                   ],
                                 ),
@@ -132,7 +132,7 @@ Widget buildMultiCartSection(
                                       mdText(text: 'Discount'),
                                       mdText(
                                         text:
-                                            '-\$${activeCart.discount.toStringAsFixed(0)}',
+                                            '-Rs.${activeCart.discount.toStringAsFixed(0)}',
                                         color: Colors.red,
                                       ),
                                     ],
@@ -164,7 +164,7 @@ Widget buildMultiCartSection(
                                     mdTextBold(text: 'Total'),
                                     mdTextBold(
                                       text:
-                                          '\$${(activeCart.totalAmount - activeCart.discount).toStringAsFixed(0)}',
+                                          'Rs.${(activeCart.totalAmount - activeCart.discount).toStringAsFixed(0)}',
                                     ),
                                   ],
                                 ),

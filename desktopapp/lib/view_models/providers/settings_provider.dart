@@ -87,6 +87,10 @@ class SettingsState {
   final IconStyle iconStyle; // Icon style preference
   final int primaryColorValue; // Primary color as int value
 
+  // Optional module toggles (show/hide whole features)
+  final bool showShoppingListModule;
+  final bool showRepairsModule;
+
   // Getter for primary color
   Color get primaryColor => Color(primaryColorValue);
 
@@ -160,6 +164,8 @@ class SettingsState {
     this.useMultiCart = false, // Default to single cart
     this.iconStyle = IconStyle.defaultStyle, // Default to Material icons
     this.primaryColorValue = 0xFFff6701, // Default orange color
+    this.showShoppingListModule = true,
+    this.showRepairsModule = true,
     this.showBannerSection = true,
     this.bannerImagePaths = const [],
     this.bannerAutoScroll = true,
@@ -214,6 +220,8 @@ class SettingsState {
     bool? useMultiCart,
     IconStyle? iconStyle,
     int? primaryColorValue,
+    bool? showShoppingListModule,
+    bool? showRepairsModule,
     bool? showBannerSection,
     List<String>? bannerImagePaths,
     bool? bannerAutoScroll,
@@ -260,6 +268,9 @@ class SettingsState {
       useMultiCart: useMultiCart ?? this.useMultiCart,
       iconStyle: iconStyle ?? this.iconStyle,
       primaryColorValue: primaryColorValue ?? this.primaryColorValue,
+      showShoppingListModule:
+          showShoppingListModule ?? this.showShoppingListModule,
+      showRepairsModule: showRepairsModule ?? this.showRepairsModule,
       showBannerSection: showBannerSection ?? this.showBannerSection,
       bannerImagePaths: bannerImagePaths ?? this.bannerImagePaths,
       bannerAutoScroll: bannerAutoScroll ?? this.bannerAutoScroll,
@@ -313,6 +324,8 @@ class SettingsState {
       'useMultiCart': useMultiCart,
       'iconStyle': iconStyle.name,
       'primaryColorValue': primaryColorValue,
+      'showShoppingListModule': showShoppingListModule,
+      'showRepairsModule': showRepairsModule,
       'showBannerSection': showBannerSection,
       'bannerImagePaths': bannerImagePaths,
       'bannerAutoScroll': bannerAutoScroll,
@@ -416,6 +429,8 @@ class SettingsState {
               )
               : IconStyle.defaultStyle,
       primaryColorValue: map['primaryColorValue'] ?? 0xFFff6701,
+      showShoppingListModule: map['showShoppingListModule'] ?? true,
+      showRepairsModule: map['showRepairsModule'] ?? true,
       showBannerSection: map['showBannerSection'] ?? true,
       bannerImagePaths:
           map['bannerImagePaths'] != null
@@ -604,6 +619,17 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
   void setPrimaryColor(int colorValue) {
     state = state.copyWith(primaryColorValue: colorValue);
+    _saveSettings();
+  }
+
+  // Module visibility toggles
+  void setShowShoppingListModule(bool value) {
+    state = state.copyWith(showShoppingListModule: value);
+    _saveSettings();
+  }
+
+  void setShowRepairsModule(bool value) {
+    state = state.copyWith(showRepairsModule: value);
     _saveSettings();
   }
 

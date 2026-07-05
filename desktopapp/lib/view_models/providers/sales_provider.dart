@@ -139,7 +139,9 @@ final databaseServiceProvider = Provider<DatabaseService>(
 
 final salesProvider = StateNotifierProvider<SalesNotifier, SalesState>((ref) {
   final dbService = ref.read(databaseServiceProvider);
-  final settingsState = ref.watch(settingsProvider);
+  // Read settings ONCE at creation. Watching here would rebuild the notifier
+  // and wipe the in-progress cart every time any app setting changed.
+  final settingsState = ref.read(settingsProvider);
   return SalesNotifier(dbService, settingsState);
 });
 

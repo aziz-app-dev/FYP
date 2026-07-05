@@ -86,20 +86,46 @@ class ProductDetailsNotifier extends StateNotifier<ProductDetailsState> {
   }
 
   Future<void> _loadRelatedProducts() async {
-    if (product.brand != null && product.brand != 'No Brand') {
-      try {
-        final allProducts = await _dbService.getProducts();
+    try {
+      final allProducts = await _dbService.getProducts();
+
+      if (product.isService) {
+        // For a service, show the top-selling services (by quantity sold).
+        final bills = await _dbService.getBills();
+        final Map<String, int> salesCount = {};
+        for (final bill in bills) {
+          for (final entry in bill.quantities.entries) {
+            salesCount[entry.key] = (salesCount[entry.key] ?? 0) + entry.value;
+          }
+        }
+
+        final services =
+            allProducts
+                .where((p) => p.isService && p.id != product.id)
+                .toList()
+              ..sort(
+                (a, b) =>
+                    (salesCount[b.id] ?? 0).compareTo(salesCount[a.id] ?? 0),
+              );
+
+        state = state.copyWith(relatedProducts: services.take(6).toList());
+        return;
+      }
+
+      // For an item, show other products from the same brand.
+      if (product.brand != null && product.brand != 'No Brand') {
         final related =
             allProducts
                 .where((p) => p.brand == product.brand && p.id != product.id)
                 .take(6)
                 .toList();
-
         state = state.copyWith(relatedProducts: related);
-      } catch (e) {
-        // Related products are optional
+      } else {
         state = state.copyWith(relatedProducts: []);
       }
+    } catch (e) {
+      // Related products are optional
+      state = state.copyWith(relatedProducts: []);
     }
   }
 

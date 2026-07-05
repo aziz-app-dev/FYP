@@ -86,22 +86,39 @@ class SupabaseSyncService {
       message: 'Starting sync...',
     );
 
-    _connSub = _connectivity.onConnectivityChanged.listen((results) async {
-      final online = results.any((r) => r != ConnectivityResult.none);
-      status.value = status.value.copyWith(
-        isOnline: online,
-        queuedOps: _queue.length,
-        message: online ? 'Online' : 'Offline',
-      );
+    _connSub = _connectivity.onConnectivityChanged.listen(
+      (results) async {
+        final online = results.any((r) => r != ConnectivityResult.none);
+        status.value = status.value.copyWith(
+          isOnline: online,
+          queuedOps: _queue.length,
+          message: online ? 'Online' : 'Offline',
+        );
 
-      if (online) {
-        await flushQueue();
-      }
-    });
+        if (online) {
+          await flushQueue();
+        }
+      },
+      // The connectivity_plus Windows implementation can throw a
+      // PlatformException (NetworkManager::StartListen) when it fails to
+      // activate the change stream. Swallow it instead of crashing — we still
+      // fall back to the initial checkConnectivity() reading below.
+      onError: (Object e, StackTrace st) {
+        debugPrint('Connectivity stream error (ignored): $e');
+      },
+      cancelOnError: false,
+    );
 
-    // Initial online detection
-    final initial = await _connectivity.checkConnectivity();
-    final online = initial.any((r) => r != ConnectivityResult.none);
+    // Initial online detection. checkConnectivity() can also throw on Windows;
+    // assume online so sync isn't permanently disabled by a platform hiccup.
+    bool online;
+    try {
+      final initial = await _connectivity.checkConnectivity();
+      online = initial.any((r) => r != ConnectivityResult.none);
+    } catch (e) {
+      debugPrint('checkConnectivity failed (assuming online): $e');
+      online = true;
+    }
     status.value = status.value.copyWith(
       isOnline: online,
       queuedOps: _queue.length,

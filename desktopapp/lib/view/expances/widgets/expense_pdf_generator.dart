@@ -132,9 +132,9 @@ class ExpensePDFGenerator {
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
         children: [
-          _buildSummaryItem('Total Expenses', '\$${totalAmount.toStringAsFixed(2)}', PdfColors.blue800),
+          _buildSummaryItem('Total Expenses', 'Rs.${totalAmount.toStringAsFixed(2)}', PdfColors.blue800),
           _buildSummaryItem('Transactions', expenses.length.toString(), PdfColors.orange800),
-          _buildSummaryItem('Average', '\$${avgExpense.toStringAsFixed(2)}', PdfColors.green800),
+          _buildSummaryItem('Average', 'Rs.${avgExpense.toStringAsFixed(2)}', PdfColors.green800),
         ],
       ),
     );
@@ -243,7 +243,7 @@ class ExpensePDFGenerator {
                       pw.SizedBox(
                         width: 80,
                         child: pw.Text(
-                          '\$${entry.value.toStringAsFixed(2)}',
+                          'Rs.${entry.value.toStringAsFixed(2)}',
                           style: const pw.TextStyle(fontSize: 10),
                           textAlign: pw.TextAlign.right,
                         ),
@@ -321,7 +321,7 @@ class ExpensePDFGenerator {
                 _tableCell(expense.categoryName ?? 'Other'),
                 _tableCell(expense.note ?? '-'),
                 _tableCell(
-                  '\$${expense.amount.toStringAsFixed(2)}',
+                  'Rs.${expense.amount.toStringAsFixed(2)}',
                   align: pw.TextAlign.right,
                   isBold: true,
                 ),
@@ -335,7 +335,7 @@ class ExpensePDFGenerator {
                 _tableCell(''),
                 _tableCell('Total', isBold: true, align: pw.TextAlign.right),
                 _tableCell(
-                  '\$${totalAmount.toStringAsFixed(2)}',
+                  'Rs.${totalAmount.toStringAsFixed(2)}',
                   align: pw.TextAlign.right,
                   isBold: true,
                   color: PdfColors.blue800,

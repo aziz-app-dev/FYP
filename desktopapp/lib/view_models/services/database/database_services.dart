@@ -12,6 +12,7 @@ import '../../../models/items_model.dart';
 import '../../../models/brand_model.dart';
 import '../../../models/category_model.dart';
 import '../../../models/shopping_list_model.dart';
+import '../../../models/repair_model.dart';
 import '../../../models/user/user_model.dart';
 import '../../../models/expense_model.dart';
 import '../sync/sync_queue.dart';
@@ -44,6 +45,7 @@ class HiveService {
   static const String _shoppingListsBoxName =
       'shoppingLists'; // The lists themselves
   static const String _shoppingListBoxName = 'shoppingList'; // The items
+  static const String _repairBoxName = 'repairs'; // Repair jobs
   static const String _expenseBoxName = 'expenses';
   static const String _expenseCategoryBoxName = 'expenseCategories';
   static const String _syncQueueBoxName = SyncQueue.boxName;
@@ -69,6 +71,7 @@ class HiveService {
     await Hive.openBox<Map>(_categoryBoxName);
     await Hive.openBox<Map>(_shoppingListsBoxName);
     await Hive.openBox<Map>(_shoppingListBoxName);
+    await Hive.openBox<Map>(_repairBoxName);
     await Hive.openBox<Map>(_expenseBoxName);
     await Hive.openBox<Map>(_expenseCategoryBoxName);
     await Hive.openBox<Map>(_syncQueueBoxName);
@@ -728,6 +731,7 @@ class HiveService {
   static Box<Map> get _categoryBox => Hive.box<Map>(_categoryBoxName);
   static Box<Map> get _shoppingListsBox => Hive.box<Map>(_shoppingListsBoxName);
   static Box<Map> get _shoppingListBox => Hive.box<Map>(_shoppingListBoxName);
+  static Box<Map> get _repairBox => Hive.box<Map>(_repairBoxName);
   static Box<Map> get _syncQueueBox => Hive.box<Map>(_syncQueueBoxName);
 
   // Product Field Configs
@@ -1226,6 +1230,27 @@ class HiveService {
     }
   }
 
+  // Repair Jobs Management Methods
+  Future<List<Repair>> getRepairs() async {
+    final maps = _repairBox.values.toList();
+    return maps
+        .map((map) => Repair.fromMap(Map<String, dynamic>.from(map)))
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  Future<void> addRepair(Repair repair) async {
+    await _repairBox.put(repair.id, repair.toMap());
+  }
+
+  Future<void> updateRepair(Repair repair) async {
+    await _repairBox.put(repair.id, repair.toMap());
+  }
+
+  Future<void> deleteRepair(String id) async {
+    await _repairBox.delete(id);
+  }
+
   Future<void> close() async {
     await Hive.close();
   }
@@ -1517,6 +1542,26 @@ class DatabaseService {
 
   Future<void> clearShoppedItems([String? listId]) async {
     await _hiveService.clearShoppedItems(listId);
+  }
+
+  // Repair Jobs Management Methods
+  Future<List<Repair>> getRepairs() async {
+    return await _hiveService.getRepairs();
+  }
+
+  Future<void> addRepair(Repair repair) async {
+    await _hiveService.addRepair(repair);
+    await _hiveService.enqueueUpsert('repairs', repair.toMap());
+  }
+
+  Future<void> updateRepair(Repair repair) async {
+    await _hiveService.updateRepair(repair);
+    await _hiveService.enqueueUpsert('repairs', repair.toMap());
+  }
+
+  Future<void> deleteRepair(String id) async {
+    await _hiveService.deleteRepair(id);
+    await _hiveService.enqueueDelete('repairs', id);
   }
 
   // Expense Management Methods

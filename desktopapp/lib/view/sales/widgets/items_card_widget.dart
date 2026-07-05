@@ -20,7 +20,9 @@ class CartItemCardWidget extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 2.h),
       child: Container(
-        height: 60.spMin,
+        // Size to content with a minimum so a 2-line product name doesn't
+        // overflow a rigid fixed height.
+        constraints: BoxConstraints(minHeight: 60.spMin),
         padding: EdgeInsets.all(4.h),
         decoration: BoxDecoration(
           color:
@@ -35,46 +37,59 @@ class CartItemCardWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              spacing: 2.w,
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                entry.key.imageUrl != null && entry.key.imageUrl!.isNotEmpty
-                    ? ClipRRect(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(AppSizes.borderRadiusSm),
+            Expanded(
+              child: Row(
+                spacing: 2.w,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  entry.key.imageUrl != null && entry.key.imageUrl!.isNotEmpty
+                      ? ClipRRect(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(AppSizes.borderRadiusSm),
+                        ),
+                        child: Image.file(
+                          File(entry.key.imageUrl!),
+                          fit: BoxFit.cover,
+                          width: 50.spMin,
+                          height: 50.spMin,
+                          errorBuilder:
+                              (context, error, stackTrace) => Icon(
+                                Icons.broken_image,
+                                size: 40.spMin,
+                                color: Colors.grey,
+                              ),
+                        ),
+                      )
+                      : SizedBox(
+                        width: 15.w,
+                        child: Icon(Icons.shopping_bag, size: 25.spMin),
                       ),
-                      child: Image.file(
-                        File(entry.key.imageUrl!),
-                        fit: BoxFit.cover,
-                        width: 50.spMin,
-                        height: 50.spMin,
-                        errorBuilder:
-                            (context, error, stackTrace) => Icon(
-                              Icons.broken_image,
-                              size: 40.spMin,
-                              color: Colors.grey,
-                            ),
-                      ),
-                    )
-                    : SizedBox(
-                      width: 15.w,
-                      child: Icon(Icons.shopping_bag, size: 25.spMin),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          entry.key.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12.spMin,
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                          ),
+                        ),
+                        SizedBox(height: 2.spMin),
+                        xsText(text: entry.key.price.toStringAsFixed(0)),
+                      ],
                     ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 35.w,
-                      child: smTextBold(text: entry.key.name, maxLines: 2),
-                    ),
-                    xsText(text: entry.key.price.toStringAsFixed(0)),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
+            SizedBox(width: 4.w),
             Padding(
               padding: EdgeInsets.only(right: 1.w),
               child: Row(

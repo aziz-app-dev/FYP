@@ -384,7 +384,7 @@ class ExpenseDialogs {
             ),
             title: const Text('Delete Expense'),
             content: Text(
-              'Delete expense of \$${expense.amount.toStringAsFixed(2)}?',
+              'Delete expense of Rs.${expense.amount.toStringAsFixed(2)}?',
             ),
             actions: [
               AppButton().primaryButton(

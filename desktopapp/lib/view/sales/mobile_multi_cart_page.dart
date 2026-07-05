@@ -167,7 +167,7 @@ class MobileMultiCartPage extends ConsumerWidget {
                               mdText(text: 'Subtotal'),
                               mdText(
                                 text:
-                                    '\$${currentCart.totalAmount.toStringAsFixed(2)}',
+                                    'Rs.${currentCart.totalAmount.toStringAsFixed(2)}',
                               ),
                             ],
                           ),
@@ -179,7 +179,7 @@ class MobileMultiCartPage extends ConsumerWidget {
                                 mdText(text: 'Discount'),
                                 mdText(
                                   text:
-                                      '-\$${currentCart.discount.toStringAsFixed(2)}',
+                                      '-Rs.${currentCart.discount.toStringAsFixed(2)}',
                                   color: Colors.red,
                                 ),
                               ],
@@ -193,7 +193,7 @@ class MobileMultiCartPage extends ConsumerWidget {
                               lgTextBold(text: 'Total'),
                               lgTextBold(
                                 text:
-                                    '\$${(currentCart.totalAmount - currentCart.discount).toStringAsFixed(2)}',
+                                    'Rs.${(currentCart.totalAmount - currentCart.discount).toStringAsFixed(2)}',
                                 color: AppColors.primary,
                               ),
                             ],

@@ -54,6 +54,9 @@ class ImageAssets {
   static const String win11Cash = '$_win11Path/cash-48.png';
   static const String win11Accounting = '$_win11Path/accounting-48.png';
 
+  // Settings
+  static const String win11Settings = '$_win11Path/icons8-settings-48.png';
+
   // Services
   static const String win11Service = '$_win11Path/service-48.png';
   static const String win11Service1 = '$_win11Path/service-48-1.png';
