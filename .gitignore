@@ -1,0 +1,109 @@
+# ==========================================================================
+# Root .gitignore — Food Delivery Platform (Flutter apps + Node.js backend)
+# ==========================================================================
+
+# ---------- Miscellaneous ----------
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# ---------- IDE: IntelliJ / Android Studio ----------
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# ---------- IDE: VS Code ----------
+# .vscode/ is kept in version control for shared launch configs.
+# Uncomment to ignore it instead:
+# .vscode/
+
+# ==========================================================================
+# Flutter / Dart (fyp_v1 & vendor_v1)
+# ==========================================================================
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+**/build/
+/build/
+
+# Flutter tool state
+**/.flutter
+**/.flutter_tool_state
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android build artifacts
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+**/android/.gradle
+**/android/captures/
+**/android/local.properties
+**/android/key.properties
+
+# iOS / macOS build artifacts
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/macos/Pods/
+
+# ---------- Keystore / signing files ----------
+*.jks
+*.keystore
+upload-keystore.jks
+key.properties
+
+# ==========================================================================
+# Node.js backend (fyp_v1/fyp_backend)
+# ==========================================================================
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# ==========================================================================
+# Firebase
+# ==========================================================================
+# google-services.json
+# GoogleService-Info.plist
+# firebase_options.dart
+*-firebase-adminsdk-*.json
+
+# ==========================================================================
+# Environment / secrets — NEVER commit real credentials
+# ==========================================================================
+.env
+.env.*
+!.env.example
+
+# ==========================================================================
+# Test / coverage
+# ==========================================================================
+coverage/
+
+# ==========================================================================
+# Local helper scripts / scratch
+# ==========================================================================
+temp_auto_push.bat
+temp_interactive_push.bat
+branch_structure.json
