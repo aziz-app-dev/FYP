@@ -41,6 +41,29 @@ module.exports = {
     }
   },
   
+  //! ====================Admin: list all users (optionally filter by userType)
+  getAllUsersAdmin: async (req, res) => {
+    const { userType } = req.query;
+    try {
+      const query = {};
+      if (userType) query.userType = userType;
+
+      const users = await User.find(query, "-password -otp -__v").sort({
+        createdAt: -1,
+      });
+
+      res.status(200).json({
+        status: true,
+        count: users.length,
+        users,
+      });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error fetching users.", error: error.message });
+    }
+  },
+
   // ====================Delete Users
   deleteUser: async (req, res) => {
     const userId = req.user.id;

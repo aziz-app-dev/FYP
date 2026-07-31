@@ -20,11 +20,12 @@ async function sendEmail(userEmail, message) {
             <p>Please enter this code on the verification page to complete your registration process.</p>
             <p>If you did not request this, please ignore this email.</p>`,
   };
-  try {
-    transporter.sendMail(mailOptions);
-  } catch (error) {
+  // Not awaited on purpose (fire-and-forget), but the rejection MUST be
+  // handled — an unhandled promise rejection crashes the whole server on
+  // modern Node versions.
+  transporter.sendMail(mailOptions).catch((error) => {
     console.log("Email sending failed with an error: " + error);
-  }
+  });
 }
 
 module.exports =sendEmail;

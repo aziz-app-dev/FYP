@@ -1,7 +1,7 @@
 # 🍔 Food Delivery Platform — Final Year Project (FYP)
 
 A full-stack **food ordering & delivery platform** built as a Final Year Project. It
-consists of two Flutter mobile applications (a **Customer app** and a **Vendor app**)
+consists of three Flutter applications (**Customer**, **Vendor** and **Super Admin**)
 backed by a **Node.js / Express + MongoDB** REST API.
 
 > Author: **Aziz Ur Rehman**
@@ -10,15 +10,18 @@ backed by a **Node.js / Express + MongoDB** REST API.
 
 ## 📌 Overview
 
-The platform lets customers browse restaurants and food categories, search dishes,
-manage a cart, place orders and rate them — while vendors manage incoming orders
-through their whole lifecycle (new → preparing → ready → pickup → delivered / cancelled).
+Customers browse restaurants and food categories, search dishes, manage a cart,
+place orders and rate them. Vendors manage their menu and fulfil incoming orders
+through the whole lifecycle. The Super Admin oversees the entire platform:
+every order, restaurant verification, and all user accounts.
 
 | Component | Path | Tech | Description |
 |-----------|------|------|-------------|
-| **Customer App** | [`fyp_v1/`](fyp_v1/) | Flutter (Dart) | Browse, search, cart, order & rate food |
-| **Vendor App** | [`vendor_v1/`](vendor_v1/) | Flutter (Dart) | Manage menu & fulfil orders |
+| **Customer App** | [`user_v1/`](user_v1/) | Flutter (Dart) | Browse, search, cart, order & rate food |
+| **Vendor App** | [`fyp_v1/`](fyp_v1/) | Flutter (Dart) | Manage menu & fulfil orders |
+| **Super Admin App** | [`admin_v1/`](admin_v1/) | Flutter (Dart) | Platform dashboard, all orders, restaurant approval, users |
 | **Backend API** | [`fyp_v1/fyp_backend/`](fyp_v1/fyp_backend/) | Node.js, Express, MongoDB | REST API, auth, business logic |
+| *(legacy)* | `vendor_v1/`, `fyp_v1/user-lib/` | — | Early prototype / pre-migration customer source, kept for reference |
 
 ---
 
@@ -26,25 +29,22 @@ through their whole lifecycle (new → preparing → ready → pickup → delive
 
 ```
 FYP/
-├── fyp_v1/                  # Customer Flutter app
-│   ├── lib/
-│   │   ├── common/          # Shared resources (colors, routes, components, utils, l10n)
-│   │   ├── models/          # Data models (food, order, restaurant, rating, login, error)
-│   │   ├── view models/     # GetX controllers & API services
-│   │   ├── views/           # UI screens (auth, home, foods, restaurant, profile, splash)
-│   │   └── main.dart
+├── user_v1/                 # Customer Flutter app (package name: user_v1)
+│   └── lib/                 # view / view_models / models / repository(hooks) / res
+│
+├── fyp_v1/                  # Vendor Flutter app
+│   ├── lib/                 # views / view models / models / common (MVVM + GetX)
 │   └── fyp_backend/         # Node.js / Express REST API (see below)
 │
-└── vendor_v1/               # Vendor Flutter app (same MVVM structure)
-    └── lib/
-        ├── common/
-        ├── models/
-        ├── view models/
-        └── views/           # add_foods, foods, home (order-lifecycle tabs)
+├── admin_v1/                # Super Admin Flutter app
+│   └── lib/                 # views / view models / models / common (same MVVM style)
+│
+└── vendor_v1/               # (legacy prototype, superseded by fyp_v1/lib)
 ```
 
-Both Flutter apps follow an **MVVM** pattern using **GetX** for state management,
-routing and dependency injection.
+All Flutter apps follow an **MVVM** pattern using **GetX** for state management,
+routing and dependency injection, and share the same color palette / API layer
+conventions.
 
 ### Backend structure
 
@@ -55,9 +55,11 @@ fyp_backend/
 ├── controllers/     # Route handlers (auth, user, restaurant, food, cart, order, rating…)
 ├── models/          # Mongoose schemas (user, restaurant, food, cart, order, address…)
 ├── routes/          # Express routers
-├── middlewares/     # JWT token verification
+├── middlewares/     # JWT verification (verifyToken / verifyVendor / verifyAdmin …)
 ├── utils/           # SMTP / OTP helpers
 ├── seed*.js         # Database seed scripts (data, ratings, vendor orders)
+├── seed-admin.js    # Creates / resets the Super Admin account
+├── test-e2e.js      # End-to-end API test across all three roles
 └── server.js        # App entry point
 ```
 
@@ -65,32 +67,39 @@ fyp_backend/
 
 ## ✨ Features
 
-**Customer app**
+**Customer app (`user_v1`)**
 - Email/OTP authentication
-- Browse food categories & restaurants
-- Search dishes
+- Browse food categories & restaurants, search dishes
 - Location & maps (`flutter_map`, geolocation, geocoding, polylines)
 - Cart & checkout
-- Order tracking and rating/reviews
-- Profile management
+- Order tracking (`Pending → Preparing/Ready → Delivering → Delivered / Cancelled`)
+- Rating/reviews and profile management
 
-**Vendor app**
+**Vendor app (`fyp_v1`)**
+- Create a restaurant (goes to admin for verification)
 - Add & manage food items (with image upload)
 - Order management across the full lifecycle:
-  `New → Preparing → Ready → Pickup → Delivered / Cancelled` (+ self-delivery)
+  `New → Preparing → Ready → Pickup / Self-Delivery → Delivered / Cancelled`
+- Sales analytics
+
+**Super Admin app (`admin_v1`)**
+- Dashboard: total orders, revenue, orders-by-status, users & restaurants breakdown
+- **Orders**: every order on the platform, filterable by status, with customer /
+  restaurant / items detail and full status override (including cancelling an
+  order at any stage — something vendors cannot do)
+- **Restaurants**: approve / reject / re-review vendor restaurant applications
+- **Users**: list all accounts, filter by role (Customer / Vendor / Admin / Driver)
+- Admin-only login guard (`userType == 'Admin'`)
 
 **Backend**
-- JWT-based authentication & password encryption (`crypto-js`)
-- OTP email delivery via `nodemailer`
-- REST endpoints for restaurants, categories, foods, cart, addresses, orders, ratings, search, settings & home feed
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend:** Flutter (Dart, SDK `^3.5.1`), GetX, flutter_screenutil, google_fonts, cached_network_image, flutter_map, geolocator, lottie, flutter_svg
-- **Backend:** Node.js, Express 4, Mongoose 8 (MongoDB), JSON Web Tokens, crypto-js, nodemailer, dotenv
-- **Image hosting:** Cloudinary
+- JWT-based auth & role middlewares (`Client`, `Vendor`, `Admin`, `Driver`)
+- Admin endpoints:
+  - `GET /api/order/admin` — all orders (populated customer/restaurant/foods, filters)
+  - `GET /api/order/admin/stats` — platform stats for the dashboard
+  - `GET /api/user/admin/all` — all users (`?userType=` filter)
+  - `GET /api/restaurant/admin/all`, `PATCH /api/restaurant/verify/:id`
+- Customer order listing supports comma-separated statuses (e.g. `Preparing,Ready`)
+- OTP email delivery via `nodemailer`, image hosting via Cloudinary
 
 ---
 
@@ -106,22 +115,22 @@ fyp_backend/
 ```bash
 cd fyp_v1/fyp_backend
 
-# Install dependencies
 npm install
 
 # Configure environment
-cp .env.example .env      # then fill in real values (see below)
+cp .env.example .env      # then fill in real values
 
-# (Optional) seed the database
+# (Optional) seed demo data
 node seed.js
 node seed-ratings.js
 node seed-vendor-orders.js
 
-# Run the server (nodemon)
-npm start
-```
+# Create the Super Admin account (default admin@fyp.com / admin12345)
+node seed-admin.js [email] [password]
 
-The server listens on the `PORT` from your `.env` (default `5000`).
+# Run the server
+npm start                 # listens on PORT from .env (default 5000)
+```
 
 #### Environment variables (`fyp_v1/fyp_backend/.env`)
 
@@ -134,47 +143,63 @@ The server listens on the `PORT` from your `.env` (default `5000`).
 | `EMAIL`    | Sender email for OTP messages                      |
 | `PASSWORD` | App password for the sender email account          |
 
-> ⚠️ **Never commit your real `.env`.** It is git-ignored; use `.env.example` as a template.
+> ⚠️ **Never commit your real `.env`.** Use `.env.example` as a template.
 
-### 2. Customer app (`fyp_v1`)
+### 2. The Flutter apps
+
+Each app reads the backend address from its `AppUrl.baseUrl`
+(`lib/**/app_url/app_url.dart`). The admin app also accepts a build-time
+override, no code edit needed:
 
 ```bash
-cd fyp_v1
-flutter pub get
+# Customer app
+cd user_v1 && flutter pub get && flutter run
 
-# Point the app at your backend:
-# edit lib/common/res/app_url/ and set `baseUrl` to your machine's IP + port,
-# e.g. http://192.168.x.x:5000
+# Vendor app
+cd fyp_v1 && flutter pub get && flutter run
 
-flutter run
+# Super Admin app (Android / Web / Windows)
+cd admin_v1 && flutter pub get
+flutter run --dart-define=BASE_URL=http://<your-ip>:5000
 ```
 
-### 3. Vendor app (`vendor_v1`)
+Login to the admin app with the account created by `seed-admin.js`
+(default `admin@fyp.com` / `admin12345`).
+
+---
+
+## 🧪 Testing
 
 ```bash
-cd vendor_v1
-flutter pub get
-flutter run
+# End-to-end API test (server must be running + admin seeded):
+cd fyp_v1/fyp_backend && node test-e2e.js
+# Covers: registration/login for all 3 roles, restaurant approval,
+# food creation, full order lifecycle, admin overrides, role security.
+
+# Flutter tests / static analysis:
+cd admin_v1 && flutter analyze && flutter test
+cd user_v1  && flutter analyze && flutter test
+cd fyp_v1   && flutter analyze && flutter test
 ```
 
 ---
 
 ## 🌐 API Endpoints (base paths)
 
-| Router        | Base path            |
-|---------------|----------------------|
-| Auth          | `/`                  |
-| User          | `/api/user/`         |
-| Restaurant    | `/api/restaurant/`   |
-| Category      | `/api/category/`     |
-| Foods         | `/api/foods/`        |
-| Cart          | `/api/cart/`         |
-| Address       | `/api/address/`      |
-| Rating        | `/api/rating/`       |
-| Food search   | `/api/foodSearch/`   |
-| Order         | `/api/order/`        |
-| Settings      | `/api/settings/`     |
-| Home feed     | `/api/home/`         |
+| Router        | Base path            | Notable admin routes                     |
+|---------------|----------------------|------------------------------------------|
+| Auth          | `/`                  |                                          |
+| User          | `/api/user/`         | `GET admin/all`                          |
+| Restaurant    | `/api/restaurant/`   | `GET admin/all`, `PATCH verify/:id`      |
+| Category      | `/api/category/`     |                                          |
+| Foods         | `/api/foods/`        |                                          |
+| Cart          | `/api/cart/`         |                                          |
+| Address       | `/api/address/`      |                                          |
+| Rating        | `/api/rating/`       |                                          |
+| Food search   | `/api/foodSearch/`   |                                          |
+| Order         | `/api/order/`        | `GET admin`, `GET admin/stats`           |
+| Settings      | `/api/settings/`     |                                          |
+| Home feed     | `/api/home/`         |                                          |
 
 ---
 
@@ -185,6 +210,8 @@ flutter run
 - Third-party API keys (e.g. Cloudinary) should ideally be moved into environment
   configuration rather than hardcoded in source.
 - If any secret was ever committed, rotate it before publishing this repository.
+- Change the default admin password (`node seed-admin.js admin@fyp.com <new-password>`)
+  before demoing or deploying.
 
 ---
 
